@@ -333,6 +333,9 @@ private[platform] object Conversions {
     Instant.ofEpochSecond(seconds, TimeUnit.MICROSECONDS.toNanos(microsOfSecond))
   }
 
+  def timestampFromMicros(name: String): RowParser[com.daml.lf.data.Time.Timestamp] =
+    SqlParser.get[Long](name).map(com.daml.lf.data.Time.Timestamp.assertFromLong)
+
   // Hash
 
   implicit object HashToStatement extends ToStatement[Hash] {

@@ -4,11 +4,11 @@
 package com.daml.platform.store.backend.common
 
 import java.sql.Connection
-import java.time.Instant
 import anorm.SqlParser.{array, bool, byteArray, int, long, str}
 import anorm.{Row, RowParser, SimpleSql, ~}
 import com.daml.ledger.offset.Offset
 import com.daml.lf.data.Ref
+import com.daml.lf.data.Time.Timestamp
 import com.daml.logging.{ContextualizedLogger, LoggingContext}
 import com.daml.platform.store.Conversions.{
   contractId,
@@ -16,6 +16,7 @@ import com.daml.platform.store.Conversions.{
   identifier,
   instantFromMicros,
   offset,
+  timestampFromMicros,
 }
 import com.daml.platform.store.SimpleSqlAsVectorOf.SimpleSqlAsVectorOf
 import com.daml.platform.store.appendonlydao.events.{EventsTable, Identifier, Raw}
@@ -60,7 +61,7 @@ trait EventStorageBackendTemplate extends EventStorageBackend {
     ).mkString(", ")
 
   private type SharedRow =
-    Offset ~ String ~ Int ~ Long ~ String ~ String ~ Instant ~ Identifier ~ Option[String] ~
+    Offset ~ String ~ Int ~ Long ~ String ~ String ~ Timestamp ~ Identifier ~ Option[String] ~
       Option[String] ~ Array[String]
 
   private val sharedRow: RowParser[SharedRow] =
@@ -70,7 +71,7 @@ trait EventStorageBackendTemplate extends EventStorageBackend {
       long("event_sequential_id") ~
       str("event_id") ~
       str("contract_id") ~
-      instantFromMicros("ledger_effective_time") ~
+      timestampFromMicros("ledger_effective_time") ~
       identifier("template_id") ~
       str("command_id").? ~
       str("workflow_id").? ~

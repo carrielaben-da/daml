@@ -13,6 +13,8 @@ import com.daml.ledger.api.domain._
 
 package v2 {
 
+  import com.daml.lf.data.Time.Timestamp
+
   object AcsUpdateEvent {
 
     final case class Create(
@@ -112,6 +114,6 @@ package v2 {
   case object CommandDeduplicationNew extends CommandDeduplicationResult
 
   /** This command was submitted before. */
-  final case class CommandDeduplicationDuplicate(deduplicateUntil: Instant)
+  final case class CommandDeduplicationDuplicate(deduplicateUntil: Timestamp)
       extends CommandDeduplicationResult
 }

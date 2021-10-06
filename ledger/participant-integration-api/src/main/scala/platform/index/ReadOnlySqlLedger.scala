@@ -5,7 +5,6 @@ package com.daml.platform.index
 
 import java.sql.SQLException
 import java.time.Instant
-
 import akka.Done
 import akka.actor.Cancellable
 import akka.stream._
@@ -16,6 +15,7 @@ import com.daml.ledger.offset.Offset
 import com.daml.ledger.participant.state.index.v2.ContractStore
 import com.daml.ledger.resources.{Resource, ResourceContext, ResourceOwner}
 import com.daml.lf.data.Ref
+import com.daml.lf.data.Time.Timestamp
 import com.daml.lf.engine.ValueEnricher
 import com.daml.logging.{ContextualizedLogger, LoggingContext}
 import com.daml.metrics.Metrics
@@ -201,7 +201,7 @@ private[index] abstract class ReadOnlySqlLedger(
   private val (deduplicationCleanupKillSwitch, deduplicationCleanupDone) =
     Source
       .tick[Unit](0.millis, 10.minutes, ())
-      .mapAsync[Unit](1)(_ => ledgerDao.removeExpiredDeduplicationData(Instant.now()))
+      .mapAsync[Unit](1)(_ => ledgerDao.removeExpiredDeduplicationData(Timestamp.now()))
       .viaMat(KillSwitches.single)(Keep.right[Cancellable, UniqueKillSwitch])
       .toMat(Sink.ignore)(Keep.both[UniqueKillSwitch, Future[Done]])
       .run()

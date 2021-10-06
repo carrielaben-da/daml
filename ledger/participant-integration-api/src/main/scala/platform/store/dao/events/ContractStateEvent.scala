@@ -4,8 +4,8 @@
 package com.daml.platform.store.dao.events
 
 import java.time.Instant
-
 import com.daml.ledger.offset.Offset
+import com.daml.lf.data.Time.Timestamp
 
 sealed trait ContractStateEvent extends Product with Serializable {
   def eventOffset: Offset
@@ -16,7 +16,7 @@ object ContractStateEvent {
       contractId: ContractId,
       contract: Contract,
       globalKey: Option[Key],
-      ledgerEffectiveTime: Instant,
+      ledgerEffectiveTime: Timestamp,
       stakeholders: Set[Party],
       eventOffset: Offset,
       eventSequentialId: Long,

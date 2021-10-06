@@ -4,7 +4,6 @@
 package com.daml.platform.store.dao
 
 import java.time.Instant
-
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 import com.daml.daml_lf_dev.DamlLf.Archive
@@ -23,6 +22,7 @@ import com.daml.ledger.offset.Offset
 import com.daml.ledger.participant.state.index.v2.{CommandDeduplicationResult, PackageDetails}
 import com.daml.ledger.participant.state.{v2 => state}
 import com.daml.lf.data.Ref
+import com.daml.lf.data.Time.Timestamp
 import com.daml.lf.transaction.{BlindingInfo, CommittedTransaction}
 import com.daml.logging.LoggingContext
 import com.daml.platform.indexer.OffsetStep
@@ -188,8 +188,8 @@ private[platform] trait LedgerReadDao extends ReportsHealth {
   def deduplicateCommand(
       commandId: CommandId,
       submitters: List[Ref.Party],
-      submittedAt: Instant,
-      deduplicateUntil: Instant,
+      submittedAt: Timestamp,
+      deduplicateUntil: Timestamp,
   )(implicit loggingContext: LoggingContext): Future[CommandDeduplicationResult]
 
   /** Remove all expired deduplication entries. This method has to be called
@@ -203,7 +203,7 @@ private[platform] trait LedgerReadDao extends ReportsHealth {
     *         call deduplicateCommand().
     */
   def removeExpiredDeduplicationData(
-      currentTime: Instant
+      currentTime: Timestamp
   )(implicit loggingContext: LoggingContext): Future[Unit]
 
   /** Stops deduplicating the given command. This method should be called after
