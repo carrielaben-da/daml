@@ -517,7 +517,7 @@ trait EventStorageBackendTemplate extends EventStorageBackend {
       eventId("event_id") ~
       contractId("contract_id") ~
       identifier("template_id").? ~
-      instantFromMicros("ledger_effective_time").? ~
+      timestampFromMicros("ledger_effective_time").? ~
       array[String]("create_signatories").? ~
       array[String]("create_observers").? ~
       str("create_agreement_text").? ~

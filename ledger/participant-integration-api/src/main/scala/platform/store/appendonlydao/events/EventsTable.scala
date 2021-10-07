@@ -21,7 +21,6 @@ import com.daml.lf.data.Time.Timestamp
 import com.daml.platform.ApiOffset
 import com.daml.platform.api.v1.event.EventOps.{EventOps, TreeEventOps}
 import com.daml.platform.index.TransactionConversion
-import com.google.protobuf.timestamp.Timestamp
 
 // TODO append-only: FIXME: move to the right place
 object EventsTable {
