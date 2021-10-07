@@ -12,6 +12,7 @@ import com.daml.ledger.participant.state.index.v2._
 import com.daml.ledger.participant.state.{v2 => state}
 import com.daml.lf.crypto
 import com.daml.lf.data.Ref
+import com.daml.lf.data.Time.Timestamp
 import com.daml.lf.engine.{Error => LfError}
 import com.daml.lf.interpretation.{Error => InterpretationError}
 import com.daml.lf.transaction.SubmittedTransaction
@@ -139,10 +140,10 @@ private[apiserver] final class ApiSubmissionService private[services] (
         commands.commandId,
         commands.actAs.toList,
         commands.submittedAt,
-        DeduplicationPeriod.deduplicateUntil(
-          commands.submittedAt,
+        Timestamp.assertFromInstant(DeduplicationPeriod.deduplicateUntil(
+          commands.submittedAt.toInstant,
           commands.deduplicationPeriod,
-        ),
+        )),
       )
       .flatMap {
         case CommandDeduplicationNew =>

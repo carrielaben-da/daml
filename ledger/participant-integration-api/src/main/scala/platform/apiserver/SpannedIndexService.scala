@@ -132,7 +132,7 @@ private[daml] final class SpannedIndexService(delegate: IndexService) extends In
 
   override def lookupMaximumLedgerTime(
       ids: Set[Value.ContractId]
-  )(implicit loggingContext: LoggingContext): Future[Option[Instant]] =
+  )(implicit loggingContext: LoggingContext): Future[Option[Timestamp]] =
     delegate.lookupMaximumLedgerTime(ids)
 
   override def getLedgerId()(implicit loggingContext: LoggingContext): Future[LedgerId] =
