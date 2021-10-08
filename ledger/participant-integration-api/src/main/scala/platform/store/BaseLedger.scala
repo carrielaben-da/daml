@@ -133,7 +133,7 @@ private[platform] abstract class BaseLedger(
 
   override def lookupMaximumLedgerTime(
       contractIds: Set[ContractId]
-  )(implicit loggingContext: LoggingContext): Future[Option[Instant]] =
+  )(implicit loggingContext: LoggingContext): Future[Option[Timestamp]] =
     contractStore.lookupMaximumLedgerTime(contractIds)
 
   override def getParties(parties: Seq[Ref.Party])(implicit

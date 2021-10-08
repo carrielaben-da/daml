@@ -3,7 +3,6 @@
 
 package com.daml.platform.index
 
-import java.time.Instant
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 import com.daml.daml_lf_dev.DamlLf.Archive
@@ -204,7 +203,7 @@ private[platform] final class LedgerBackedIndexService(
 
   override def lookupMaximumLedgerTime(ids: Set[ContractId])(implicit
       loggingContext: LoggingContext
-  ): Future[Option[Instant]] =
+  ): Future[Option[Timestamp]] =
     ledger.lookupMaximumLedgerTime(ids)
 
   override def lookupContractKey(

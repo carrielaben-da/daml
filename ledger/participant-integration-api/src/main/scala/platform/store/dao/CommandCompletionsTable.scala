@@ -3,12 +3,11 @@
 
 package com.daml.platform.store.dao
 
-import java.time.Instant
-
-import anorm.{~, Row, RowParser, SimpleSql, SqlParser, SqlStringInterpolation}
+import anorm.{Row, RowParser, SimpleSql, SqlParser, SqlStringInterpolation, ~}
 import com.daml.ledger.api.v1.command_completion_service.CompletionStreamResponse
 import com.daml.ledger.offset.Offset
 import com.daml.lf.data.Ref
+import com.daml.lf.data.Time.Timestamp
 import com.daml.platform.store.CompletionFromTransaction
 import com.daml.platform.store.Conversions._
 import com.daml.platform.store.dao.events.SqlFunctions
@@ -18,8 +17,8 @@ private[platform] object CommandCompletionsTable {
 
   import SqlParser.{int, str}
 
-  private val sharedColumns: RowParser[Offset ~ Instant ~ String ~ String] =
-    offset("completion_offset") ~ instantFromTimestamp("record_time") ~ str("command_id") ~ str(
+  private val sharedColumns: RowParser[Offset ~ Timestamp ~ String ~ String] =
+    offset("completion_offset") ~ timestampFromMicros("record_time") ~ str("command_id") ~ str(
       "application_id"
     )
 

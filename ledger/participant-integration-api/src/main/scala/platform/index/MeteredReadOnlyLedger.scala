@@ -3,7 +3,6 @@
 
 package com.daml.platform.index
 
-import java.time.Instant
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 import com.daml.daml_lf_dev.DamlLf.Archive
@@ -104,7 +103,7 @@ private[platform] class MeteredReadOnlyLedger(ledger: ReadOnlyLedger, metrics: M
 
   override def lookupMaximumLedgerTime(
       contractIds: Set[ContractId]
-  )(implicit loggingContext: LoggingContext): Future[Option[Instant]] =
+  )(implicit loggingContext: LoggingContext): Future[Option[Timestamp]] =
     Timed.future(
       metrics.daml.index.lookupMaximumLedgerTime,
       ledger.lookupMaximumLedgerTime(contractIds),

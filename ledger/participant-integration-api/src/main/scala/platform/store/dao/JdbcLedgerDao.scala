@@ -5,38 +5,23 @@ package com.daml.platform.store.dao
 import java.sql.Connection
 import java.time.Instant
 import java.util.{Date, UUID}
-
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 import anorm.SqlParser._
 import anorm.ToStatement.optionToStatement
-import anorm.{
-  BatchSql,
-  Macro,
-  NamedParameter,
-  Row,
-  RowParser,
-  SQL,
-  SimpleSql,
-  SqlParser,
-  SqlStringInterpolation,
-}
+import anorm.{BatchSql, Macro, NamedParameter, Row, RowParser, SQL, SimpleSql, SqlParser, SqlStringInterpolation}
 import com.daml.daml_lf_dev.DamlLf.Archive
 import com.daml.ledger.api.domain
 import com.daml.ledger.api.domain.{LedgerId, ParticipantId, PartyDetails}
 import com.daml.ledger.api.health.HealthStatus
 import com.daml.ledger.configuration.Configuration
 import com.daml.ledger.offset.Offset
-import com.daml.ledger.participant.state.index.v2.{
-  CommandDeduplicationDuplicate,
-  CommandDeduplicationNew,
-  CommandDeduplicationResult,
-  PackageDetails,
-}
+import com.daml.ledger.participant.state.index.v2.{CommandDeduplicationDuplicate, CommandDeduplicationNew, CommandDeduplicationResult, PackageDetails}
 import com.daml.ledger.participant.state.{v2 => state}
 import com.daml.ledger.resources.ResourceOwner
 import com.daml.lf.archive.ArchiveParser
 import com.daml.lf.data.Ref
+import com.daml.lf.data.Time.Timestamp
 import com.daml.lf.engine.ValueEnricher
 import com.daml.lf.transaction.{BlindingInfo, CommittedTransaction}
 import com.daml.logging.LoggingContext.withEnrichedLoggingContext
@@ -53,12 +38,7 @@ import com.daml.platform.store.dao.CommandCompletionsTable.prepareCompletionsDel
 import com.daml.platform.store.dao.PersistenceResponse.Ok
 import com.daml.platform.store.dao.events.TransactionsWriter.PreparedInsert
 import com.daml.platform.store.dao.events._
-import com.daml.platform.store.entries.{
-  ConfigurationEntry,
-  LedgerEntry,
-  PackageLedgerEntry,
-  PartyLedgerEntry,
-}
+import com.daml.platform.store.entries.{ConfigurationEntry, LedgerEntry, PackageLedgerEntry, PartyLedgerEntry}
 import scalaz.syntax.tag._
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -259,7 +239,7 @@ private class JdbcLedgerDao(
 
   override def storeConfigurationEntry(
       offsetStep: OffsetStep,
-      recordedAt: Instant,
+      recordedAt: Timestamp,
       submissionId: String,
       configuration: Configuration,
       rejectionReason: Option[String],
@@ -417,7 +397,7 @@ private class JdbcLedgerDao(
           offset ->
             PartyLedgerEntry.AllocationAccepted(
               submissionIdOpt,
-              recordTime.toInstant,
+              Timestamp.assertFromInstant(recordTime.toInstant),
               PartyDetails(party, displayNameOpt, isLocal),
             )
         case (
@@ -432,7 +412,7 @@ private class JdbcLedgerDao(
             ) =>
           offset -> PartyLedgerEntry.AllocationRejected(
             submissionId,
-            recordTime.toInstant,
+            Timestamp.assertFromInstant(recordTime.toInstant),
             reason,
           )
         case invalidRow =>
@@ -463,7 +443,7 @@ private class JdbcLedgerDao(
       completionInfo: Option[state.CompletionInfo],
       workflowId: Option[Ref.WorkflowId],
       transactionId: Ref.TransactionId,
-      ledgerEffectiveTime: Instant,
+      ledgerEffectiveTime: Timestamp,
       offset: Offset,
       transaction: CommittedTransaction,
       divulgedContracts: Iterable[state.DivulgedContract],
@@ -526,8 +506,8 @@ private class JdbcLedgerDao(
       preparedInsert: PreparedInsert,
       completionInfo: Option[state.CompletionInfo],
       transactionId: Ref.TransactionId,
-      recordTime: Instant,
-      ledgerEffectiveTime: Instant,
+      recordTime: Timestamp,
+      ledgerEffectiveTime: Timestamp,
       offsetStep: OffsetStep,
       transaction: CommittedTransaction,
       divulged: Iterable[state.DivulgedContract],
@@ -552,7 +532,7 @@ private class JdbcLedgerDao(
   }
 
   private def validate(
-      ledgerEffectiveTime: Instant,
+      ledgerEffectiveTime: Timestamp,
       transaction: CommittedTransaction,
       divulged: Iterable[state.DivulgedContract],
   )(implicit connection: Connection): Option[PostCommitValidation.Rejection] =
@@ -568,7 +548,7 @@ private class JdbcLedgerDao(
   private def insertCompletions(
       completionInfo: Option[state.CompletionInfo],
       transactionId: Ref.TransactionId,
-      recordTime: Instant,
+      recordTime: Timestamp,
       offsetStep: OffsetStep,
   )(implicit connection: Connection): Unit =
     Timed.value(
@@ -586,14 +566,14 @@ private class JdbcLedgerDao(
 
   override def storeRejection(
       completionInfo: Option[state.CompletionInfo],
-      recordTime: Instant,
+      recordTime: Timestamp,
       offsetStep: OffsetStep,
       reason: state.Update.CommandRejected.RejectionReasonTemplate,
   )(implicit loggingContext: LoggingContext): Future[PersistenceResponse] = {
     logger.info("Storing rejection")
     dbDispatcher.executeSql(metrics.daml.index.db.storeRejectionDbMetrics) { implicit conn =>
       for (info <- completionInfo) {
-        handleError(offsetStep.offset, info, recordTime, reason)
+        handleError(offsetStep.offset, info, recordTime.toInstant, reason)
       }
       ParametersTable.updateLedgerEnd(offsetStep)
       Ok
@@ -866,8 +846,8 @@ private class JdbcLedgerDao(
   override def deduplicateCommand(
       commandId: domain.CommandId,
       submitters: List[Ref.Party],
-      submittedAt: Instant,
-      deduplicateUntil: Instant,
+      submittedAt: Timestamp,
+      deduplicateUntil: Timestamp,
   )(implicit loggingContext: LoggingContext): Future[CommandDeduplicationResult] =
     dbDispatcher.executeSql(metrics.daml.index.db.deduplicateCommandDbMetrics) { implicit conn =>
       val key = DeduplicationKeyMaker.make(commandId, submitters)
@@ -889,7 +869,7 @@ private class JdbcLedgerDao(
           .on("deduplicationKey" -> key)
           .as(CommandDataParser.single)
 
-        CommandDeduplicationDuplicate(result.deduplicateUntil)
+        CommandDeduplicationDuplicate(Timestamp.assertFromInstant(result.deduplicateUntil))
       }
     }
 
@@ -899,12 +879,12 @@ private class JdbcLedgerDao(
     """.stripMargin)
 
   override def removeExpiredDeduplicationData(
-      currentTime: Instant
+      currentTime: Timestamp
   )(implicit loggingContext: LoggingContext): Future[Unit] =
     dbDispatcher.executeSql(metrics.daml.index.db.removeExpiredDeduplicationDataDbMetrics) {
       implicit conn =>
         SQL_DELETE_EXPIRED_COMMANDS
-          .on("currentTime" -> currentTime)
+          .on("currentTime" -> currentTime.toInstant)
           .execute()
         ()
     }
@@ -1027,12 +1007,12 @@ private class JdbcLedgerDao(
       completionInfo: Option[state.CompletionInfo],
       workflowId: Option[Ref.WorkflowId],
       transactionId: Ref.TransactionId,
-      ledgerEffectiveTime: Instant,
+      ledgerEffectiveTime: Timestamp,
       offset: OffsetStep,
       transaction: CommittedTransaction,
       divulgedContracts: Iterable[state.DivulgedContract],
       blindingInfo: Option[BlindingInfo],
-      recordTime: Instant,
+      recordTime: Timestamp,
   )(implicit loggingContext: LoggingContext): Future[PersistenceResponse] = {
     val preparedInsert = prepareTransactionInsert(
       completionInfo = completionInfo,

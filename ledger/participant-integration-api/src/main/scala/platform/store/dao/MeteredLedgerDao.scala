@@ -4,7 +4,6 @@
 package com.daml.platform.store.dao
 
 import java.time.Instant
-
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 import com.daml.daml_lf_dev.DamlLf.Archive
@@ -15,18 +14,14 @@ import com.daml.ledger.offset.Offset
 import com.daml.ledger.participant.state.index.v2.{CommandDeduplicationResult, PackageDetails}
 import com.daml.ledger.participant.state.{v2 => state}
 import com.daml.lf.data.Ref
+import com.daml.lf.data.Time.Timestamp
 import com.daml.lf.transaction.{BlindingInfo, CommittedTransaction}
 import com.daml.logging.LoggingContext
 import com.daml.metrics.{Metrics, Timed}
 import com.daml.platform.indexer.OffsetStep
 import com.daml.platform.store.dao.events.TransactionsWriter
 import com.daml.platform.store.dao.events.TransactionsWriter.PreparedInsert
-import com.daml.platform.store.entries.{
-  ConfigurationEntry,
-  LedgerEntry,
-  PackageLedgerEntry,
-  PartyLedgerEntry,
-}
+import com.daml.platform.store.entries.{ConfigurationEntry, LedgerEntry, PackageLedgerEntry, PartyLedgerEntry}
 import com.daml.platform.store.interfaces.LedgerDaoContractsReader
 
 import scala.concurrent.Future
@@ -117,15 +112,15 @@ private[platform] class MeteredLedgerReadDao(ledgerDao: LedgerReadDao, metrics: 
   override def deduplicateCommand(
       commandId: CommandId,
       submitters: List[Ref.Party],
-      submittedAt: Instant,
-      deduplicateUntil: Instant,
+      submittedAt: Timestamp,
+      deduplicateUntil: Timestamp,
   )(implicit loggingContext: LoggingContext): Future[CommandDeduplicationResult] =
     Timed.future(
       metrics.daml.index.db.deduplicateCommand,
       ledgerDao.deduplicateCommand(commandId, submitters, submittedAt, deduplicateUntil),
     )
 
-  override def removeExpiredDeduplicationData(currentTime: Instant)(implicit
+  override def removeExpiredDeduplicationData(currentTime: Timestamp)(implicit
       loggingContext: LoggingContext
   ): Future[Unit] =
     Timed.future(
@@ -160,8 +155,8 @@ private[platform] class MeteredLedgerDao(ledgerDao: LedgerDao, metrics: Metrics)
       preparedInsert: PreparedInsert,
       completionInfo: Option[state.CompletionInfo],
       transactionId: Ref.TransactionId,
-      recordTime: Instant,
-      ledgerEffectiveTime: Instant,
+      recordTime: Timestamp,
+      ledgerEffectiveTime: Timestamp,
       offsetStep: OffsetStep,
       transaction: CommittedTransaction,
       divulged: Iterable[state.DivulgedContract],
@@ -184,7 +179,7 @@ private[platform] class MeteredLedgerDao(ledgerDao: LedgerDao, metrics: Metrics)
       completionInfo: Option[state.CompletionInfo],
       workflowId: Option[Ref.WorkflowId],
       transactionId: Ref.TransactionId,
-      ledgerEffectiveTime: Instant,
+      ledgerEffectiveTime: Timestamp,
       offset: Offset,
       transaction: CommittedTransaction,
       divulgedContracts: Iterable[state.DivulgedContract],
@@ -203,7 +198,7 @@ private[platform] class MeteredLedgerDao(ledgerDao: LedgerDao, metrics: Metrics)
 
   override def storeRejection(
       completionInfo: Option[state.CompletionInfo],
-      recordTime: Instant,
+      recordTime: Timestamp,
       offsetStep: OffsetStep,
       reason: state.Update.CommandRejected.RejectionReasonTemplate,
   )(implicit loggingContext: LoggingContext): Future[PersistenceResponse] =
@@ -241,7 +236,7 @@ private[platform] class MeteredLedgerDao(ledgerDao: LedgerDao, metrics: Metrics)
 
   override def storeConfigurationEntry(
       offsetStep: OffsetStep,
-      recordTime: Instant,
+      recordTime: Timestamp,
       submissionId: String,
       configuration: Configuration,
       rejectionReason: Option[String],
@@ -280,7 +275,7 @@ private[platform] class MeteredLedgerDao(ledgerDao: LedgerDao, metrics: Metrics)
   override def completeTransaction(
       completionInfo: Option[state.CompletionInfo],
       transactionId: Ref.TransactionId,
-      recordTime: Instant,
+      recordTime: Timestamp,
       offsetStep: OffsetStep,
   )(implicit loggingContext: LoggingContext): Future[PersistenceResponse] =
     ledgerDao.completeTransaction(completionInfo, transactionId, recordTime, offsetStep)
@@ -292,12 +287,12 @@ private[platform] class MeteredLedgerDao(ledgerDao: LedgerDao, metrics: Metrics)
       completionInfo: Option[state.CompletionInfo],
       workflowId: Option[Ref.WorkflowId],
       transactionId: Ref.TransactionId,
-      ledgerEffectiveTime: Instant,
+      ledgerEffectiveTime: Timestamp,
       offset: OffsetStep,
       transaction: CommittedTransaction,
       divulgedContracts: Iterable[state.DivulgedContract],
       blindingInfo: Option[BlindingInfo],
-      recordTime: Instant,
+      recordTime: Timestamp,
   )(implicit loggingContext: LoggingContext): Future[PersistenceResponse] =
     Timed.future(
       metrics.daml.index.db.storeTransactionCombined,

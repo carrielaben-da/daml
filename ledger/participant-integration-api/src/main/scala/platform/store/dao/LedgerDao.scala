@@ -3,7 +3,6 @@
 
 package com.daml.platform.store.dao
 
-import java.time.Instant
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 import com.daml.daml_lf_dev.DamlLf.Archive
@@ -257,7 +256,7 @@ private[platform] trait LedgerWriteDao extends ReportsHealth {
       completionInfo: Option[state.CompletionInfo],
       workflowId: Option[Ref.WorkflowId],
       transactionId: Ref.TransactionId,
-      ledgerEffectiveTime: Instant,
+      ledgerEffectiveTime: Timestamp,
       offset: Offset,
       transaction: CommittedTransaction,
       divulgedContracts: Iterable[state.DivulgedContract],
@@ -269,8 +268,8 @@ private[platform] trait LedgerWriteDao extends ReportsHealth {
       preparedInsert: PreparedInsert,
       completionInfo: Option[state.CompletionInfo],
       transactionId: Ref.TransactionId,
-      recordTime: Instant,
-      ledgerEffectiveTime: Instant,
+      recordTime: Timestamp,
+      ledgerEffectiveTime: Timestamp,
       offsetStep: OffsetStep,
       transaction: CommittedTransaction,
       divulged: Iterable[state.DivulgedContract],
@@ -290,13 +289,13 @@ private[platform] trait LedgerWriteDao extends ReportsHealth {
   def completeTransaction(
       completionInfo: Option[state.CompletionInfo],
       transactionId: Ref.TransactionId,
-      recordTime: Instant,
+      recordTime: Timestamp,
       offsetStep: OffsetStep,
   )(implicit loggingContext: LoggingContext): Future[PersistenceResponse]
 
   def storeRejection(
       completionInfo: Option[state.CompletionInfo],
-      recordTime: Instant,
+      recordTime: Timestamp,
       offsetStep: OffsetStep,
       reason: state.Update.CommandRejected.RejectionReasonTemplate,
   )(implicit loggingContext: LoggingContext): Future[PersistenceResponse]
@@ -328,7 +327,7 @@ private[platform] trait LedgerWriteDao extends ReportsHealth {
     */
   def storeConfigurationEntry(
       offsetStep: OffsetStep,
-      recordedAt: Instant,
+      recordedAt: Timestamp,
       submissionId: String,
       configuration: Configuration,
       rejectionReason: Option[String],
@@ -352,12 +351,12 @@ private[platform] trait LedgerWriteDao extends ReportsHealth {
       completionInfo: Option[state.CompletionInfo],
       workflowId: Option[Ref.WorkflowId],
       transactionId: Ref.TransactionId,
-      ledgerEffectiveTime: Instant,
+      ledgerEffectiveTime: Timestamp,
       offset: OffsetStep,
       transaction: CommittedTransaction,
       divulgedContracts: Iterable[state.DivulgedContract],
       blindingInfo: Option[BlindingInfo],
-      recordTime: Instant,
+      recordTime: Timestamp,
   )(implicit loggingContext: LoggingContext): Future[PersistenceResponse]
 
 }

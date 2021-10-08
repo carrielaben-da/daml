@@ -98,7 +98,7 @@ trait ExecuteUpdate {
               completionInfo = tx.optCompletionInfo,
               workflowId = tx.transactionMeta.workflowId,
               transactionId = tx.transactionId,
-              ledgerEffectiveTime = tx.transactionMeta.ledgerEffectiveTime.toInstant,
+              ledgerEffectiveTime = tx.transactionMeta.ledgerEffectiveTime,
               offset = offsetStepPair.offsetStep.offset,
               transaction = tx.transaction,
               divulgedContracts = tx.divulgedContracts,
@@ -129,7 +129,7 @@ trait ExecuteUpdate {
           ) =>
         val entry = PartyLedgerEntry.AllocationAccepted(
           submissionId,
-          recordTime.toInstant,
+          recordTime,
           domain.PartyDetails(party, Some(displayName), participantId == hostingParticipantId),
         )
         ledgerDao.storePartyEntry(offsetStep, entry)
@@ -142,30 +142,29 @@ trait ExecuteUpdate {
           ) =>
         val entry = PartyLedgerEntry.AllocationRejected(
           submissionId,
-          recordTime.toInstant,
+          recordTime,
           rejectionReason,
         )
         ledgerDao.storePartyEntry(offsetStep, entry)
 
       case PublicPackageUpload(archives, optSourceDescription, recordTime, optSubmissionId) =>
-        val recordTimeInstant = recordTime.toInstant
         val packages: List[(DamlLf.Archive, v2.PackageDetails)] = archives.map(archive =>
           archive -> v2.PackageDetails(
             size = archive.getPayload.size.toLong,
-            knownSince = recordTimeInstant,
+            knownSince = recordTime,
             sourceDescription = optSourceDescription,
           )
         )
         val optEntry: Option[PackageLedgerEntry] =
           optSubmissionId.map(submissionId =>
-            PackageLedgerEntry.PackageUploadAccepted(submissionId, recordTimeInstant)
+            PackageLedgerEntry.PackageUploadAccepted(submissionId, recordTime)
           )
         ledgerDao.storePackageEntry(offsetStep, packages, optEntry)
 
       case PublicPackageUploadRejected(submissionId, recordTime, rejectionReason) =>
         val entry = PackageLedgerEntry.PackageUploadRejected(
           submissionId,
-          recordTime.toInstant,
+          recordTime,
           rejectionReason,
         )
         ledgerDao.storePackageEntry(offsetStep, List.empty, Some(entry))
@@ -173,7 +172,7 @@ trait ExecuteUpdate {
       case config: ConfigurationChanged =>
         ledgerDao.storeConfigurationEntry(
           offsetStep,
-          config.recordTime.toInstant,
+          config.recordTime,
           config.submissionId,
           config.newConfiguration,
           None,
@@ -182,7 +181,7 @@ trait ExecuteUpdate {
       case configRejection: ConfigurationChangeRejected =>
         ledgerDao.storeConfigurationEntry(
           offsetStep,
-          configRejection.recordTime.toInstant,
+          configRejection.recordTime,
           configRejection.submissionId,
           configRejection.proposedConfiguration,
           Some(configRejection.rejectionReason),
@@ -191,7 +190,7 @@ trait ExecuteUpdate {
       case CommandRejected(recordTime, completionInfo, reason) =>
         ledgerDao.storeRejection(
           Some(completionInfo),
-          recordTime.toInstant,
+          recordTime,
           offsetStep,
           reason,
         )
@@ -206,7 +205,7 @@ trait ExecuteUpdate {
             completionInfo = optCompletionInfo,
             workflowId = transactionMeta.workflowId,
             transactionId = transactionId,
-            ledgerEffectiveTime = transactionMeta.ledgerEffectiveTime.toInstant,
+            ledgerEffectiveTime = transactionMeta.ledgerEffectiveTime,
             offset = offsetStep.offset,
             transaction = transaction,
             divulgedContracts = divulgedContracts,
@@ -214,8 +213,8 @@ trait ExecuteUpdate {
           ),
           completionInfo = optCompletionInfo,
           transactionId = transactionId,
-          recordTime = recordTime.toInstant,
-          ledgerEffectiveTime = transactionMeta.ledgerEffectiveTime.toInstant,
+          recordTime = recordTime,
+          ledgerEffectiveTime = transactionMeta.ledgerEffectiveTime,
           offsetStep = offsetStep,
           transaction = transaction,
           divulged = divulgedContracts,
@@ -291,7 +290,7 @@ class PipelinedExecuteUpdate(
         ledgerDao.completeTransaction(
           completionInfo = tx.optCompletionInfo,
           transactionId = tx.transactionId,
-          recordTime = tx.recordTime.toInstant,
+          recordTime = tx.recordTime,
           offsetStep = offsetStep,
         ),
       )
@@ -383,8 +382,8 @@ class AtomicExecuteUpdate(
             preparedInsert,
             completionInfo = optCompletionInfo,
             transactionId = transactionId,
-            recordTime = recordTime.toInstant,
-            ledgerEffectiveTime = transactionMeta.ledgerEffectiveTime.toInstant,
+            recordTime = recordTime,
+            ledgerEffectiveTime = transactionMeta.ledgerEffectiveTime,
             offsetStep = offsetStep,
             transaction = transaction,
             divulged = divulgedContracts,
