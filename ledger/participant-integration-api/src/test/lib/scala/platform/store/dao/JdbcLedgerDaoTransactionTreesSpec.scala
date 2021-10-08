@@ -62,7 +62,10 @@ private[dao] trait JdbcLedgerDaoTransactionTreesSpec
           tx.transaction.nodes.head
         transaction.commandId shouldBe tx.commandId.get
         transaction.offset shouldBe ApiOffset.toApiString(offset)
-        TimestampConversion.toLf(transaction.effectiveAt.value, TimestampConversion.ConversionMode.Exact) shouldBe tx.ledgerEffectiveTime
+        TimestampConversion.toLf(
+          transaction.effectiveAt.value,
+          TimestampConversion.ConversionMode.Exact,
+        ) shouldBe tx.ledgerEffectiveTime
         transaction.transactionId shouldBe tx.transactionId
         transaction.workflowId shouldBe tx.workflowId.getOrElse("")
         val created = transaction.eventsById.values.loneElement.getCreated
@@ -93,7 +96,10 @@ private[dao] trait JdbcLedgerDaoTransactionTreesSpec
           exercise.transaction.nodes.head
         transaction.commandId shouldBe exercise.commandId.get
         transaction.offset shouldBe ApiOffset.toApiString(offset)
-        TimestampConversion.toLf(transaction.effectiveAt.value, TimestampConversion.ConversionMode.Exact) shouldBe exercise.ledgerEffectiveTime
+        TimestampConversion.toLf(
+          transaction.effectiveAt.value,
+          TimestampConversion.ConversionMode.Exact,
+        ) shouldBe exercise.ledgerEffectiveTime
         transaction.transactionId shouldBe exercise.transactionId
         transaction.workflowId shouldBe exercise.workflowId.getOrElse("")
         val exercised = transaction.eventsById.values.loneElement.getExercised
@@ -132,7 +138,10 @@ private[dao] trait JdbcLedgerDaoTransactionTreesSpec
         transaction.offset shouldBe ApiOffset.toApiString(offset)
         transaction.transactionId shouldBe tx.transactionId
         transaction.workflowId shouldBe tx.workflowId.getOrElse("")
-        TimestampConversion.toLf(transaction.effectiveAt.value, TimestampConversion.ConversionMode.Exact) shouldBe tx.ledgerEffectiveTime
+        TimestampConversion.toLf(
+          transaction.effectiveAt.value,
+          TimestampConversion.ConversionMode.Exact,
+        ) shouldBe tx.ledgerEffectiveTime
 
         transaction.rootEventIds should have size 2
         transaction.rootEventIds(0) shouldBe EventId(

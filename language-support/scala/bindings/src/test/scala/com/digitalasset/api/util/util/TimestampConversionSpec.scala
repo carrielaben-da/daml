@@ -106,7 +106,7 @@ class TimestampConversionSpec
         down.toInstant should be <= ts
         up.toInstant should be >= ts
         down should be < up
-        halfUp should (be (down) or be (up))
+        halfUp should (be(down) or be(up))
         (up.micros - down.micros) shouldBe 1000
         up.toInstant.truncatedTo(java.time.temporal.ChronoUnit.MICROS) shouldBe up.toInstant
         down.toInstant.truncatedTo(java.time.temporal.ChronoUnit.MICROS) shouldBe down.toInstant

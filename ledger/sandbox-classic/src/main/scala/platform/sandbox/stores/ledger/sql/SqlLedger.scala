@@ -528,7 +528,9 @@ private final class SqlLedger(
         .storePackageEntry(
           CurrentOffset(offset),
           packages,
-          Some(PackageLedgerEntry.PackageUploadAccepted(submissionId, timeProvider.getCurrentTimestamp)),
+          Some(
+            PackageLedgerEntry.PackageUploadAccepted(submissionId, timeProvider.getCurrentTimestamp)
+          ),
         )
         .map(_ => ())(DEC)
         .recover { case t =>

@@ -44,8 +44,8 @@ case class LedgerTimeModel private (
   }
 
   def checkTime(
-    ledgerTime: Timestamp,
-    recordTime: Timestamp,
+      ledgerTime: Timestamp,
+      recordTime: Timestamp,
   ): Either[OutOfRange, Unit] = {
     checkTime(ledgerTime.toInstant, recordTime.toInstant)
   }

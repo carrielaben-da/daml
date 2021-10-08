@@ -11,7 +11,10 @@ import com.daml.ledger.offset.Offset
 import com.daml.lf.data.Time.Timestamp
 import com.daml.metrics.Metrics
 import com.daml.platform.store.appendonlydao.events.BufferedTransactionsReader.FetchTransactions
-import com.daml.platform.store.appendonlydao.events.BufferedTransactionsReaderSpec.{predecessor, transactionLogUpdate}
+import com.daml.platform.store.appendonlydao.events.BufferedTransactionsReaderSpec.{
+  predecessor,
+  transactionLogUpdate,
+}
 import com.daml.platform.store.cache.EventsBuffer
 import com.daml.platform.store.interfaces.TransactionLogUpdate
 import org.mockito.MockitoSugar

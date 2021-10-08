@@ -290,7 +290,8 @@ object domain {
 
     import Logging._
 
-    implicit val `Timestamp to LoggingValue`: ToLoggingValue[Timestamp] = ToLoggingValue.ToStringToLoggingValue
+    implicit val `Timestamp to LoggingValue`: ToLoggingValue[Timestamp] =
+      ToLoggingValue.ToStringToLoggingValue
 
     implicit val `Commands to LoggingValue`: ToLoggingValue[Commands] = commands =>
       LoggingValue.Nested.fromEntries(

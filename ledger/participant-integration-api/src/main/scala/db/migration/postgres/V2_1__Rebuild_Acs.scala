@@ -20,7 +20,11 @@ import com.daml.lf.data.Time.Timestamp
 import com.daml.lf.engine.Blinding
 import com.daml.lf.transaction.GlobalKey
 import com.daml.lf.value.Value.ContractId
-import com.daml.platform.db.migration.translation.{ContractSerializer, TransactionSerializer, ValueSerializer}
+import com.daml.platform.db.migration.translation.{
+  ContractSerializer,
+  TransactionSerializer,
+  ValueSerializer,
+}
 import com.daml.platform.store.Contract.ActiveContract
 import com.daml.platform.store.Conversions._
 import com.daml.platform.store.entries.LedgerEntry

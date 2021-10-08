@@ -6,8 +6,17 @@ package com.daml.platform.store.appendonlydao.events
 import com.daml.api.util.TimestampConversion
 import com.daml.ledger.api.v1.active_contracts_service.GetActiveContractsResponse
 import com.daml.ledger.api.v1.event.Event
-import com.daml.ledger.api.v1.transaction.{TreeEvent, Transaction => ApiTransaction, TransactionTree => ApiTransactionTree}
-import com.daml.ledger.api.v1.transaction_service.{GetFlatTransactionResponse, GetTransactionResponse, GetTransactionTreesResponse, GetTransactionsResponse}
+import com.daml.ledger.api.v1.transaction.{
+  TreeEvent,
+  Transaction => ApiTransaction,
+  TransactionTree => ApiTransactionTree,
+}
+import com.daml.ledger.api.v1.transaction_service.{
+  GetFlatTransactionResponse,
+  GetTransactionResponse,
+  GetTransactionTreesResponse,
+  GetTransactionsResponse,
+}
 import com.daml.ledger.offset.Offset
 import com.daml.lf.data.Time.Timestamp
 import com.daml.platform.ApiOffset

@@ -9,14 +9,29 @@ import akka.NotUsed
 import akka.stream.scaladsl.Source
 import anorm.SqlParser._
 import anorm.ToStatement.optionToStatement
-import anorm.{BatchSql, Macro, NamedParameter, Row, RowParser, SQL, SimpleSql, SqlParser, SqlStringInterpolation}
+import anorm.{
+  BatchSql,
+  Macro,
+  NamedParameter,
+  Row,
+  RowParser,
+  SQL,
+  SimpleSql,
+  SqlParser,
+  SqlStringInterpolation,
+}
 import com.daml.daml_lf_dev.DamlLf.Archive
 import com.daml.ledger.api.domain
 import com.daml.ledger.api.domain.{LedgerId, ParticipantId, PartyDetails}
 import com.daml.ledger.api.health.HealthStatus
 import com.daml.ledger.configuration.Configuration
 import com.daml.ledger.offset.Offset
-import com.daml.ledger.participant.state.index.v2.{CommandDeduplicationDuplicate, CommandDeduplicationNew, CommandDeduplicationResult, PackageDetails}
+import com.daml.ledger.participant.state.index.v2.{
+  CommandDeduplicationDuplicate,
+  CommandDeduplicationNew,
+  CommandDeduplicationResult,
+  PackageDetails,
+}
 import com.daml.ledger.participant.state.{v2 => state}
 import com.daml.ledger.resources.ResourceOwner
 import com.daml.lf.archive.ArchiveParser
@@ -38,7 +53,12 @@ import com.daml.platform.store.dao.CommandCompletionsTable.prepareCompletionsDel
 import com.daml.platform.store.dao.PersistenceResponse.Ok
 import com.daml.platform.store.dao.events.TransactionsWriter.PreparedInsert
 import com.daml.platform.store.dao.events._
-import com.daml.platform.store.entries.{ConfigurationEntry, LedgerEntry, PackageLedgerEntry, PartyLedgerEntry}
+import com.daml.platform.store.entries.{
+  ConfigurationEntry,
+  LedgerEntry,
+  PackageLedgerEntry,
+  PartyLedgerEntry,
+}
 import scalaz.syntax.tag._
 import spray.json.DefaultJsonProtocol._
 import spray.json._
@@ -467,7 +487,9 @@ private class JdbcLedgerDao(
       rejectionReason: state.Update.CommandRejected.RejectionReasonTemplate,
   )(implicit connection: Connection): Unit = {
     stopDeduplicatingCommandSync(domain.CommandId(completionInfo.commandId), completionInfo.actAs)
-    queries.prepareRejectionInsert(completionInfo, offset, recordTime.toInstant, rejectionReason).execute()
+    queries
+      .prepareRejectionInsert(completionInfo, offset, recordTime.toInstant, rejectionReason)
+      .execute()
     ()
   }
 
@@ -554,7 +576,9 @@ private class JdbcLedgerDao(
     Timed.value(
       metrics.daml.index.db.storeTransactionDbMetrics.insertCompletion,
       completionInfo
-        .map(queries.prepareCompletionInsert(_, offsetStep.offset, transactionId, recordTime.toInstant))
+        .map(
+          queries.prepareCompletionInsert(_, offsetStep.offset, transactionId, recordTime.toInstant)
+        )
         .foreach(_.execute()),
     )
 
@@ -615,7 +639,10 @@ private class JdbcLedgerDao(
                 blindingInfo = None,
               ).write(metrics)
               completionInfo
-                .map(queries.prepareCompletionInsert(_, offset, tx.transactionId, tx.recordedAt.toInstant))
+                .map(
+                  queries
+                    .prepareCompletionInsert(_, offset, tx.transactionId, tx.recordedAt.toInstant)
+                )
                 .foreach(_.execute())
             case LedgerEntry.Rejection(
                   recordTime,
@@ -805,10 +832,17 @@ private class JdbcLedgerDao(
       .map {
         case (offset, recordTime, Some(submissionId), `acceptType`, None) =>
           offset ->
-            PackageLedgerEntry.PackageUploadAccepted(submissionId, Timestamp.assertFromInstant(recordTime.toInstant))
+            PackageLedgerEntry.PackageUploadAccepted(
+              submissionId,
+              Timestamp.assertFromInstant(recordTime.toInstant),
+            )
         case (offset, recordTime, Some(submissionId), `rejectType`, Some(reason)) =>
           offset ->
-            PackageLedgerEntry.PackageUploadRejected(submissionId, Timestamp.assertFromInstant(recordTime.toInstant), reason)
+            PackageLedgerEntry.PackageUploadRejected(
+              submissionId,
+              Timestamp.assertFromInstant(recordTime.toInstant),
+              reason,
+            )
         case invalidRow =>
           sys.error(s"packageEntryParser: invalid party entry row: $invalidRow")
       }

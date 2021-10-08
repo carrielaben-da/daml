@@ -14,8 +14,30 @@ import com.daml.platform.server.api.validation.ErrorFactories
 import com.daml.platform.store.appendonlydao.events.Party
 import com.daml.platform.store.backend.EventStorageBackend.FilterParams
 import com.daml.platform.store.backend.common.ComposableQuery.{CompositeSql, SqlStringInterpolation}
-import com.daml.platform.store.backend.common.{AppendOnlySchema, CompletionStorageBackendTemplate, ConfigurationStorageBackendTemplate, ContractStorageBackendTemplate, DataSourceStorageBackendTemplate, DeduplicationStorageBackendTemplate, EventStorageBackendTemplate, EventStrategy, IngestionStorageBackendTemplate, InitHookDataSourceProxy, IntegrityStorageBackendTemplate, PackageStorageBackendTemplate, ParameterStorageBackendTemplate, PartyStorageBackendTemplate, QueryStrategy}
-import com.daml.platform.store.backend.{DBLockStorageBackend, DataSourceStorageBackend, DbDto, StorageBackend, common}
+import com.daml.platform.store.backend.common.{
+  AppendOnlySchema,
+  CompletionStorageBackendTemplate,
+  ConfigurationStorageBackendTemplate,
+  ContractStorageBackendTemplate,
+  DataSourceStorageBackendTemplate,
+  DeduplicationStorageBackendTemplate,
+  EventStorageBackendTemplate,
+  EventStrategy,
+  IngestionStorageBackendTemplate,
+  InitHookDataSourceProxy,
+  IntegrityStorageBackendTemplate,
+  PackageStorageBackendTemplate,
+  ParameterStorageBackendTemplate,
+  PartyStorageBackendTemplate,
+  QueryStrategy,
+}
+import com.daml.platform.store.backend.{
+  DBLockStorageBackend,
+  DataSourceStorageBackend,
+  DbDto,
+  StorageBackend,
+  common,
+}
 
 import javax.sql.DataSource
 import org.postgresql.ds.PGSimpleDataSource

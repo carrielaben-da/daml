@@ -9,22 +9,47 @@ import akka.NotUsed
 import akka.stream.scaladsl.Source
 import com.daml.api.util.TimeProvider
 import com.daml.daml_lf_dev.DamlLf.Archive
-import com.daml.ledger.api.domain.{ApplicationId, CommandId, Filters, InclusiveFilters, LedgerId, LedgerOffset, PartyDetails, RejectionReason, TransactionFilter}
+import com.daml.ledger.api.domain.{
+  ApplicationId,
+  CommandId,
+  Filters,
+  InclusiveFilters,
+  LedgerId,
+  LedgerOffset,
+  PartyDetails,
+  RejectionReason,
+  TransactionFilter,
+}
 import com.daml.ledger.api.health.{HealthStatus, Healthy}
 import com.daml.ledger.api.v1.active_contracts_service.GetActiveContractsResponse
 import com.daml.ledger.api.v1.command_completion_service.CompletionStreamResponse
 import com.daml.ledger.api.v1.event.CreatedEvent
-import com.daml.ledger.api.v1.transaction_service.{GetFlatTransactionResponse, GetTransactionResponse, GetTransactionTreesResponse, GetTransactionsResponse}
+import com.daml.ledger.api.v1.transaction_service.{
+  GetFlatTransactionResponse,
+  GetTransactionResponse,
+  GetTransactionTreesResponse,
+  GetTransactionsResponse,
+}
 import com.daml.ledger.configuration.Configuration
 import com.daml.ledger.offset.Offset
-import com.daml.ledger.participant.state.index.v2.{CommandDeduplicationDuplicate, CommandDeduplicationNew, CommandDeduplicationResult, PackageDetails}
+import com.daml.ledger.participant.state.index.v2.{
+  CommandDeduplicationDuplicate,
+  CommandDeduplicationNew,
+  CommandDeduplicationResult,
+  PackageDetails,
+}
 import com.daml.ledger.participant.state.{v2 => state}
 import com.daml.lf.data.Time.Timestamp
 import com.daml.lf.data.{ImmArray, Ref, Time}
 import com.daml.lf.engine.{Engine, Result, ResultDone, ValueEnricher}
 import com.daml.lf.language.Ast
 import com.daml.lf.ledger.EventId
-import com.daml.lf.transaction.{CommittedTransaction, GlobalKey, SubmittedTransaction, TransactionCommitter}
+import com.daml.lf.transaction.{
+  CommittedTransaction,
+  GlobalKey,
+  SubmittedTransaction,
+  TransactionCommitter,
+}
 import com.daml.lf.value.Value
 import com.daml.lf.value.Value.{ContractId, ContractInst}
 import com.daml.logging.{ContextualizedLogger, LoggingContext}
@@ -38,7 +63,12 @@ import com.daml.platform.sandbox.stores.ledger.{Ledger, Rejection}
 import com.daml.platform.store.CompletionFromTransaction
 import com.daml.platform.store.Contract.ActiveContract
 import com.daml.platform.store.Conversions.RejectionReasonOps
-import com.daml.platform.store.entries.{ConfigurationEntry, LedgerEntry, PackageLedgerEntry, PartyLedgerEntry}
+import com.daml.platform.store.entries.{
+  ConfigurationEntry,
+  LedgerEntry,
+  PackageLedgerEntry,
+  PartyLedgerEntry,
+}
 import com.daml.platform.{ApiOffset, index}
 import io.grpc.Status
 import scalaz.syntax.tag.ToTagOps
@@ -314,15 +344,17 @@ private[sandbox] final class InMemoryLedger(
       )
     } else {
       Future.fromTry(Try(this.synchronized {
-        contractIds.foldLeft[Option[Instant]](Some(Instant.MIN))((acc, id) => {
-          val let = acs.activeContracts
-            .getOrElse(
-              id,
-              sys.error(s"Contract $id not found while looking for maximum ledger time"),
-            )
-            .let
-          acc.map(acc => if (let.isAfter(acc)) let else acc)
-        }).map(Timestamp.assertFromInstant)
+        contractIds
+          .foldLeft[Option[Instant]](Some(Instant.MIN))((acc, id) => {
+            val let = acs.activeContracts
+              .getOrElse(
+                id,
+                sys.error(s"Contract $id not found while looking for maximum ledger time"),
+              )
+              .let
+            acc.map(acc => if (let.isAfter(acc)) let else acc)
+          })
+          .map(Timestamp.assertFromInstant)
       }))
     }
 
@@ -575,7 +607,8 @@ private[sandbox] final class InMemoryLedger(
           if (packageStoreRef.compareAndSet(oldStore, newStore)) {
             entries.publish(
               InMemoryPackageEntry(
-                PackageLedgerEntry.PackageUploadAccepted(submissionId, timeProvider.getCurrentTimestamp)
+                PackageLedgerEntry
+                  .PackageUploadAccepted(submissionId, timeProvider.getCurrentTimestamp)
               )
             )
             Future.successful(state.SubmissionResult.Acknowledged)

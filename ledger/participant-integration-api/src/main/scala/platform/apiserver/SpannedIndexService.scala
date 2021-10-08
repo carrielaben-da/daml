@@ -6,11 +6,23 @@ package com.daml.platform.apiserver
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 import com.daml.daml_lf_dev.DamlLf
-import com.daml.ledger.api.domain.{ApplicationId, CommandId, ConfigurationEntry, LedgerId, LedgerOffset, TransactionId}
+import com.daml.ledger.api.domain.{
+  ApplicationId,
+  CommandId,
+  ConfigurationEntry,
+  LedgerId,
+  LedgerOffset,
+  TransactionId,
+}
 import com.daml.ledger.api.health.HealthStatus
 import com.daml.ledger.api.v1.active_contracts_service.GetActiveContractsResponse
 import com.daml.ledger.api.v1.command_completion_service.CompletionStreamResponse
-import com.daml.ledger.api.v1.transaction_service.{GetFlatTransactionResponse, GetTransactionResponse, GetTransactionTreesResponse, GetTransactionsResponse}
+import com.daml.ledger.api.v1.transaction_service.{
+  GetFlatTransactionResponse,
+  GetTransactionResponse,
+  GetTransactionTreesResponse,
+  GetTransactionsResponse,
+}
 import com.daml.ledger.api.{TraceIdentifiers, domain}
 import com.daml.ledger.configuration.Configuration
 import com.daml.ledger.offset.Offset

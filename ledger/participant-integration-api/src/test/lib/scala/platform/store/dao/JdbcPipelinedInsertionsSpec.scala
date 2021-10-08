@@ -39,7 +39,10 @@ trait JdbcPipelinedInsertionsSpec extends Inside with OptionValues with Matchers
       inside(result.value.transaction) { case Some(transaction) =>
         transaction.commandId shouldBe tx.commandId.get
         transaction.offset shouldBe ApiOffset.toApiString(offset)
-        TimestampConversion.toLf(transaction.effectiveAt.value, TimestampConversion.ConversionMode.Exact) shouldBe tx.ledgerEffectiveTime
+        TimestampConversion.toLf(
+          transaction.effectiveAt.value,
+          TimestampConversion.ConversionMode.Exact,
+        ) shouldBe tx.ledgerEffectiveTime
         transaction.transactionId shouldBe tx.transactionId
         transaction.workflowId shouldBe tx.workflowId.getOrElse("")
         inside(transaction.events.loneElement.event.created) { case Some(created) =>

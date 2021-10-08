@@ -22,11 +22,24 @@ import com.daml.metrics.Metrics
 import com.daml.platform.store.EventSequentialId
 import com.daml.platform.store.cache.ContractKeyStateValue.{Assigned, Unassigned}
 import com.daml.platform.store.cache.ContractStateValue.{Active, Archived}
-import com.daml.platform.store.cache.MutableCacheBackedContractStore.{ContractNotFound, EmptyContractIds, EventSequentialId, SubscribeToContractStateEvents}
-import com.daml.platform.store.cache.MutableCacheBackedContractStoreSpec.{ContractsReaderFixture, contractStore, _}
+import com.daml.platform.store.cache.MutableCacheBackedContractStore.{
+  ContractNotFound,
+  EmptyContractIds,
+  EventSequentialId,
+  SubscribeToContractStateEvents,
+}
+import com.daml.platform.store.cache.MutableCacheBackedContractStoreSpec.{
+  ContractsReaderFixture,
+  contractStore,
+  _,
+}
 import com.daml.platform.store.dao.events.ContractStateEvent
 import com.daml.platform.store.interfaces.LedgerDaoContractsReader
-import com.daml.platform.store.interfaces.LedgerDaoContractsReader.{ContractState, KeyAssigned, KeyUnassigned}
+import com.daml.platform.store.interfaces.LedgerDaoContractsReader.{
+  ContractState,
+  KeyAssigned,
+  KeyUnassigned,
+}
 import org.mockito.MockitoSugar
 import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.should.Matchers

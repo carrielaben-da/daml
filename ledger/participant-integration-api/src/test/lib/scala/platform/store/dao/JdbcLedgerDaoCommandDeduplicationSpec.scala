@@ -6,7 +6,10 @@ package com.daml.platform.store.dao
 import java.time.Instant
 import java.util.UUID
 import com.daml.ledger.api.domain.CommandId
-import com.daml.ledger.participant.state.index.v2.{CommandDeduplicationDuplicate, CommandDeduplicationNew}
+import com.daml.ledger.participant.state.index.v2.{
+  CommandDeduplicationDuplicate,
+  CommandDeduplicationNew,
+}
 import com.daml.lf.data.Time.Timestamp
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers

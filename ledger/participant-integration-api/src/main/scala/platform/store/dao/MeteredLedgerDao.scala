@@ -20,7 +20,12 @@ import com.daml.metrics.{Metrics, Timed}
 import com.daml.platform.indexer.OffsetStep
 import com.daml.platform.store.dao.events.TransactionsWriter
 import com.daml.platform.store.dao.events.TransactionsWriter.PreparedInsert
-import com.daml.platform.store.entries.{ConfigurationEntry, LedgerEntry, PackageLedgerEntry, PartyLedgerEntry}
+import com.daml.platform.store.entries.{
+  ConfigurationEntry,
+  LedgerEntry,
+  PackageLedgerEntry,
+  PartyLedgerEntry,
+}
 import com.daml.platform.store.interfaces.LedgerDaoContractsReader
 
 import scala.concurrent.Future

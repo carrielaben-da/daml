@@ -23,7 +23,11 @@ import com.daml.lf.data.ImmArray
 import com.daml.lf.data.Time.Timestamp
 import com.daml.lf.engine.{Engine, EngineConfig}
 import com.daml.lf.language.LanguageVersion
-import com.daml.lf.transaction.{LegacyTransactionCommitter, StandardTransactionCommitter, TransactionCommitter}
+import com.daml.lf.transaction.{
+  LegacyTransactionCommitter,
+  StandardTransactionCommitter,
+  TransactionCommitter,
+}
 import com.daml.logging.LoggingContext.newLoggingContextWith
 import com.daml.logging.{ContextualizedLogger, LoggingContext}
 import com.daml.metrics.{Metrics, MetricsReporting}

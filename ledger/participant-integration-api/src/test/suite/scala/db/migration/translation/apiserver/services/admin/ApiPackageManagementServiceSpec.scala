@@ -12,7 +12,10 @@ import com.daml.daml_lf_dev.DamlLf.Archive
 import com.daml.ledger.api.domain.LedgerOffset.Absolute
 import com.daml.ledger.api.domain.PackageEntry
 import com.daml.ledger.api.testing.utils.AkkaBeforeAndAfterAll
-import com.daml.ledger.api.v1.admin.package_management_service.{PackageManagementServiceGrpc, UploadDarFileRequest}
+import com.daml.ledger.api.v1.admin.package_management_service.{
+  PackageManagementServiceGrpc,
+  UploadDarFileRequest,
+}
 import com.daml.ledger.participant.state.index.v2.{IndexPackagesService, IndexTransactionsService}
 import com.daml.ledger.participant.state.{v2 => state}
 import com.daml.lf.archive.testing.Encode

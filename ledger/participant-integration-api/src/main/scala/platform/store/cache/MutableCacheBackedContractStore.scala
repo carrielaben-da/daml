@@ -19,7 +19,12 @@ import com.daml.platform.store.cache.MutableCacheBackedContractStore._
 import com.daml.platform.store.dao.events.ContractStateEvent
 import com.daml.platform.store.dao.events.ContractStateEvent.LedgerEndMarker
 import com.daml.platform.store.interfaces.LedgerDaoContractsReader
-import com.daml.platform.store.interfaces.LedgerDaoContractsReader.{ActiveContract, ArchivedContract, ContractState, KeyState}
+import com.daml.platform.store.interfaces.LedgerDaoContractsReader.{
+  ActiveContract,
+  ArchivedContract,
+  ContractState,
+  KeyState,
+}
 
 import java.util.concurrent.atomic.AtomicReference
 import scala.concurrent.duration.{DurationInt, FiniteDuration}

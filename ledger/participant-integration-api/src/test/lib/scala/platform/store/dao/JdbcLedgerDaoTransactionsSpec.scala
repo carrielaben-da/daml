@@ -62,7 +62,10 @@ private[dao] trait JdbcLedgerDaoTransactionsSpec extends OptionValues with Insid
       inside(result.value.transaction) { case Some(transaction) =>
         transaction.commandId shouldBe tx.commandId.get
         transaction.offset shouldBe ApiOffset.toApiString(offset)
-        TimestampConversion.toLf(transaction.effectiveAt.value, TimestampConversion.ConversionMode.Exact) shouldBe tx.ledgerEffectiveTime
+        TimestampConversion.toLf(
+          transaction.effectiveAt.value,
+          TimestampConversion.ConversionMode.Exact,
+        ) shouldBe tx.ledgerEffectiveTime
         transaction.transactionId shouldBe tx.transactionId
         transaction.workflowId shouldBe tx.workflowId.getOrElse("")
         inside(transaction.events.loneElement.event.created) { case Some(created) =>
@@ -94,7 +97,10 @@ private[dao] trait JdbcLedgerDaoTransactionsSpec extends OptionValues with Insid
         transaction.commandId shouldBe exercise.commandId.get
         transaction.offset shouldBe ApiOffset.toApiString(offset)
         transaction.transactionId shouldBe exercise.transactionId
-        TimestampConversion.toLf(transaction.effectiveAt.value, TimestampConversion.ConversionMode.Exact) shouldBe exercise.ledgerEffectiveTime
+        TimestampConversion.toLf(
+          transaction.effectiveAt.value,
+          TimestampConversion.ConversionMode.Exact,
+        ) shouldBe exercise.ledgerEffectiveTime
         transaction.workflowId shouldBe exercise.workflowId.getOrElse("")
         inside(transaction.events.loneElement.event.archived) { case Some(archived) =>
           val (nodeId, exerciseNode: NodeExercises) =
@@ -153,7 +159,10 @@ private[dao] trait JdbcLedgerDaoTransactionsSpec extends OptionValues with Insid
         transaction.commandId shouldBe tx.commandId.get
         transaction.offset shouldBe ApiOffset.toApiString(offset)
         transaction.transactionId shouldBe tx.transactionId
-        TimestampConversion.toLf(transaction.effectiveAt.value, TimestampConversion.ConversionMode.Exact) shouldBe tx.ledgerEffectiveTime
+        TimestampConversion.toLf(
+          transaction.effectiveAt.value,
+          TimestampConversion.ConversionMode.Exact,
+        ) shouldBe tx.ledgerEffectiveTime
         transaction.workflowId shouldBe tx.workflowId.getOrElse("")
         transaction.events shouldBe Seq.empty
       }

@@ -140,10 +140,12 @@ private[apiserver] final class ApiSubmissionService private[services] (
         commands.commandId,
         commands.actAs.toList,
         commands.submittedAt,
-        Timestamp.assertFromInstant(DeduplicationPeriod.deduplicateUntil(
-          commands.submittedAt.toInstant,
-          commands.deduplicationPeriod,
-        )),
+        Timestamp.assertFromInstant(
+          DeduplicationPeriod.deduplicateUntil(
+            commands.submittedAt.toInstant,
+            commands.deduplicationPeriod,
+          )
+        ),
       )
       .flatMap {
         case CommandDeduplicationNew =>
