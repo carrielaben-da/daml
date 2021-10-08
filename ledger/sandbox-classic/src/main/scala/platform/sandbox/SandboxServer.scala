@@ -7,7 +7,6 @@ import java.io.File
 import java.nio.file.Files
 import java.time.Instant
 import java.util.concurrent.Executors
-
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.codahale.metrics.MetricRegistry
@@ -21,13 +20,10 @@ import com.daml.ledger.api.health.HealthChecks
 import com.daml.ledger.participant.state.v2.metrics.TimedWriteService
 import com.daml.ledger.resources.{Resource, ResourceContext, ResourceOwner}
 import com.daml.lf.data.ImmArray
+import com.daml.lf.data.Time.Timestamp
 import com.daml.lf.engine.{Engine, EngineConfig}
 import com.daml.lf.language.LanguageVersion
-import com.daml.lf.transaction.{
-  LegacyTransactionCommitter,
-  StandardTransactionCommitter,
-  TransactionCommitter,
-}
+import com.daml.lf.transaction.{LegacyTransactionCommitter, StandardTransactionCommitter, TransactionCommitter}
 import com.daml.logging.LoggingContext.newLoggingContextWith
 import com.daml.logging.{ContextualizedLogger, LoggingContext}
 import com.daml.metrics.{Metrics, MetricsReporting}
@@ -467,7 +463,7 @@ final class SandboxServer(
     config.damlPackages
       .foldLeft[Either[(String, File), InMemoryPackageStore]](Right(InMemoryPackageStore.empty)) {
         case (storeE, f) =>
-          storeE.flatMap(_.withDarFile(Instant.EPOCH, None, f).left.map(_ -> f))
+          storeE.flatMap(_.withDarFile(Timestamp.Epoch, None, f).left.map(_ -> f))
 
       }
       .fold({ case (err, file) => sys.error(s"Could not load package $file: $err") }, identity)

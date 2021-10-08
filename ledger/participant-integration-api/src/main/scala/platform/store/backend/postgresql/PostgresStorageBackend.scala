@@ -4,7 +4,6 @@
 package com.daml.platform.store.backend.postgresql
 
 import java.sql.Connection
-import java.time.Instant
 import anorm.SQL
 import anorm.SqlParser.{get, int}
 import com.daml.ledger.offset.Offset

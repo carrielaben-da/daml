@@ -4,7 +4,6 @@
 package com.daml.platform.index
 
 import java.sql.SQLException
-import java.time.Instant
 import akka.Done
 import akka.actor.Cancellable
 import akka.stream._

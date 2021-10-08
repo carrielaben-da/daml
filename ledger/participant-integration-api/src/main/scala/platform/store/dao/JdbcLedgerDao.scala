@@ -282,7 +282,7 @@ private class JdbcLedgerDao(
           SQL_INSERT_CONFIGURATION_ENTRY
             .on(
               "ledger_offset" -> offsetStep.offset,
-              "recorded_at" -> recordedAt,
+              "recorded_at" -> recordedAt.toInstant,
               "submission_id" -> submissionId,
               "typ" -> typ,
               "rejection_reason" -> finalRejectionReason.orNull,
@@ -333,7 +333,7 @@ private class JdbcLedgerDao(
             SQL_INSERT_PARTY_ENTRY_ACCEPT
               .on(
                 "ledger_offset" -> offsetStep.offset,
-                "recorded_at" -> recordTime,
+                "recorded_at" -> recordTime.toInstant,
                 "submission_id" -> submissionIdOpt,
                 "party" -> partyDetails.party,
                 "display_name" -> partyDetails.displayName,
@@ -362,7 +362,7 @@ private class JdbcLedgerDao(
           SQL_INSERT_PARTY_ENTRY_REJECT
             .on(
               "ledger_offset" -> offsetStep.offset,
-              "recorded_at" -> recordTime,
+              "recorded_at" -> recordTime.toInstant,
               "submission_id" -> submissionId,
               "rejection_reason" -> reason,
             )
@@ -453,7 +453,7 @@ private class JdbcLedgerDao(
       completionInfo,
       workflowId,
       transactionId,
-      ledgerEffectiveTime,
+      ledgerEffectiveTime.toInstant,
       offset,
       transaction,
       divulgedContracts,
@@ -463,11 +463,11 @@ private class JdbcLedgerDao(
   private def handleError(
       offset: Offset,
       completionInfo: state.CompletionInfo,
-      recordTime: Instant,
+      recordTime: Timestamp,
       rejectionReason: state.Update.CommandRejected.RejectionReasonTemplate,
   )(implicit connection: Connection): Unit = {
     stopDeduplicatingCommandSync(domain.CommandId(completionInfo.commandId), completionInfo.actAs)
-    queries.prepareRejectionInsert(completionInfo, offset, recordTime, rejectionReason).execute()
+    queries.prepareRejectionInsert(completionInfo, offset, recordTime.toInstant, rejectionReason).execute()
     ()
   }
 
@@ -492,7 +492,7 @@ private class JdbcLedgerDao(
   override def completeTransaction(
       completionInfo: Option[state.CompletionInfo],
       transactionId: Ref.TransactionId,
-      recordTime: Instant,
+      recordTime: Timestamp,
       offsetStep: OffsetStep,
   )(implicit loggingContext: LoggingContext): Future[PersistenceResponse] =
     dbDispatcher
@@ -540,7 +540,7 @@ private class JdbcLedgerDao(
       metrics.daml.index.db.storeTransactionDbMetrics.commitValidation,
       postCommitValidation.validate(
         transaction = transaction,
-        transactionLedgerEffectiveTime = ledgerEffectiveTime,
+        transactionLedgerEffectiveTime = ledgerEffectiveTime.toInstant,
         divulged = divulged.iterator.map(_.contractId).toSet,
       ),
     )
@@ -554,7 +554,7 @@ private class JdbcLedgerDao(
     Timed.value(
       metrics.daml.index.db.storeTransactionDbMetrics.insertCompletion,
       completionInfo
-        .map(queries.prepareCompletionInsert(_, offsetStep.offset, transactionId, recordTime))
+        .map(queries.prepareCompletionInsert(_, offsetStep.offset, transactionId, recordTime.toInstant))
         .foreach(_.execute()),
     )
 
@@ -573,7 +573,7 @@ private class JdbcLedgerDao(
     logger.info("Storing rejection")
     dbDispatcher.executeSql(metrics.daml.index.db.storeRejectionDbMetrics) { implicit conn =>
       for (info <- completionInfo) {
-        handleError(offsetStep.offset, info, recordTime.toInstant, reason)
+        handleError(offsetStep.offset, info, recordTime, reason)
       }
       ParametersTable.updateLedgerEnd(offsetStep)
       Ok
@@ -615,7 +615,7 @@ private class JdbcLedgerDao(
                 blindingInfo = None,
               ).write(metrics)
               completionInfo
-                .map(queries.prepareCompletionInsert(_, offset, tx.transactionId, tx.recordedAt))
+                .map(queries.prepareCompletionInsert(_, offset, tx.transactionId, tx.recordedAt.toInstant))
                 .foreach(_.execute())
             case LedgerEntry.Rejection(
                   recordTime,
@@ -630,7 +630,7 @@ private class JdbcLedgerDao(
                   completionInfo =
                     state.CompletionInfo(actAs, applicationId, commandId, None, Some(submissionId)),
                   offset = offset,
-                  recordTime = recordTime,
+                  recordTime = recordTime.toInstant,
                   reason = reason.toParticipantStateRejectionReason,
                 )
                 .execute()
@@ -702,7 +702,7 @@ private class JdbcLedgerDao(
         _.map(d =>
           Ref.PackageId.assertFromString(d.packageId) -> PackageDetails(
             d.size,
-            d.knownSince.toInstant,
+            Timestamp.assertFromInstant(d.knownSince.toInstant),
             d.sourceDescription,
           )
         ).toMap
@@ -758,7 +758,7 @@ private class JdbcLedgerDao(
             SQL_INSERT_PACKAGE_ENTRY_ACCEPT
               .on(
                 "ledger_offset" -> offsetStep.offset,
-                "recorded_at" -> recordTime,
+                "recorded_at" -> recordTime.toInstant,
                 "submission_id" -> submissionId,
               )
               .execute()
@@ -766,7 +766,7 @@ private class JdbcLedgerDao(
             SQL_INSERT_PACKAGE_ENTRY_REJECT
               .on(
                 "ledger_offset" -> offsetStep.offset,
-                "recorded_at" -> recordTime,
+                "recorded_at" -> recordTime.toInstant,
                 "submission_id" -> submissionId,
                 "rejection_reason" -> reason,
               )
@@ -788,7 +788,7 @@ private class JdbcLedgerDao(
           "upload_id" -> uploadId,
           "source_description" -> p._2.sourceDescription,
           "size" -> p._2.size,
-          "known_since" -> p._2.knownSince,
+          "known_since" -> p._2.knownSince.toInstant,
           "package" -> p._1.toByteArray,
         )
       )
@@ -805,10 +805,10 @@ private class JdbcLedgerDao(
       .map {
         case (offset, recordTime, Some(submissionId), `acceptType`, None) =>
           offset ->
-            PackageLedgerEntry.PackageUploadAccepted(submissionId, recordTime.toInstant)
+            PackageLedgerEntry.PackageUploadAccepted(submissionId, Timestamp.assertFromInstant(recordTime.toInstant))
         case (offset, recordTime, Some(submissionId), `rejectType`, Some(reason)) =>
           offset ->
-            PackageLedgerEntry.PackageUploadRejected(submissionId, recordTime.toInstant, reason)
+            PackageLedgerEntry.PackageUploadRejected(submissionId, Timestamp.assertFromInstant(recordTime.toInstant), reason)
         case invalidRow =>
           sys.error(s"packageEntryParser: invalid party entry row: $invalidRow")
       }
@@ -855,8 +855,8 @@ private class JdbcLedgerDao(
       val updated = SQL(queries.SQL_INSERT_COMMAND)
         .on(
           "deduplicationKey" -> key,
-          "submittedAt" -> submittedAt,
-          "deduplicateUntil" -> deduplicateUntil,
+          "submittedAt" -> submittedAt.toInstant,
+          "deduplicateUntil" -> deduplicateUntil.toInstant,
         )
         .executeUpdate()
 

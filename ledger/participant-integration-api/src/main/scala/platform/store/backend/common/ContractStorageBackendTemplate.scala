@@ -12,7 +12,6 @@ import com.daml.platform.store.Conversions.{
   contractId,
   flatEventWitnessesColumn,
   identifier,
-  instantFromMicros,
   offset,
   timestampFromMicros,
 }

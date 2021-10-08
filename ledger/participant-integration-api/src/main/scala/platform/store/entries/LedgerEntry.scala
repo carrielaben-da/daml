@@ -3,7 +3,6 @@
 
 package com.daml.platform.store.entries
 
-import java.time.Instant
 import com.daml.ledger.api.domain.RejectionReason
 import com.daml.lf.data.Ref
 import com.daml.lf.data.Relation.Relation

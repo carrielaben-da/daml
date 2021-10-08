@@ -3,13 +3,12 @@
 
 package com.daml.platform.store.dao
 
-import java.time.Instant
 import java.util.UUID
-
 import akka.stream.scaladsl.Sink
 import com.daml.ledger.api.domain.PartyDetails
 import com.daml.ledger.offset.Offset
 import com.daml.lf.data.Ref
+import com.daml.lf.data.Time.Timestamp
 import com.daml.platform.indexer.{IncrementalOffsetStep, OffsetStep}
 import com.daml.platform.store.dao.ParametersTable.LedgerEndUpdateError
 import com.daml.platform.store.entries.PartyLedgerEntry
@@ -56,11 +55,11 @@ private[dao] trait JdbcLedgerDaoPartiesSpec {
       isLocal = true,
     )
     val acceptedSubmissionId = UUID.randomUUID().toString
-    val acceptedRecordTime = Instant.now()
+    val acceptedRecordTime = Timestamp.now()
     val accepted1 =
       PartyLedgerEntry.AllocationAccepted(Some(acceptedSubmissionId), acceptedRecordTime, accepted)
     val rejectedSubmissionId = UUID.randomUUID().toString
-    val rejectedRecordTime = Instant.now()
+    val rejectedRecordTime = Timestamp.now()
     val rejected1 =
       PartyLedgerEntry.AllocationRejected(rejectedSubmissionId, rejectedRecordTime, rejectionReason)
     val originalOffset = previousOffset.get().get
@@ -153,7 +152,7 @@ private[dao] trait JdbcLedgerDaoPartiesSpec {
     recoverToSucceededIf[LedgerEndUpdateError](
       ledgerDao.storePartyEntry(
         IncrementalOffsetStep(nextOffset(), nextOffset()),
-        PartyLedgerEntry.AllocationAccepted(Some(UUID.randomUUID().toString), Instant.now(), fred),
+        PartyLedgerEntry.AllocationAccepted(Some(UUID.randomUUID().toString), Timestamp.now(), fred),
       )
     )
   }
@@ -332,7 +331,7 @@ private[dao] trait JdbcLedgerDaoPartiesSpec {
       partyDetails: PartyDetails,
       offset: Offset,
       submissionIdOpt: Option[Ref.SubmissionId] = Some(UUID.randomUUID().toString),
-      recordTime: Instant = Instant.now(),
+      recordTime: Timestamp = Timestamp.now(),
   ) =
     ledgerDao
       .storePartyEntry(
@@ -348,7 +347,7 @@ private[dao] trait JdbcLedgerDaoPartiesSpec {
       reason: String,
       offset: Offset,
       submissionIdOpt: Ref.SubmissionId,
-      recordTime: Instant,
+      recordTime: Timestamp,
   ): Future[PersistenceResponse] =
     ledgerDao
       .storePartyEntry(

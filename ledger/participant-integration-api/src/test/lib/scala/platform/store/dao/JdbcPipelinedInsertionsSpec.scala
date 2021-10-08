@@ -3,6 +3,7 @@
 
 package com.daml.platform.store.dao
 
+import com.daml.api.util.TimestampConversion
 import com.daml.ledger.offset.Offset
 import com.daml.lf.ledger.EventId
 import com.daml.lf.transaction.Node.NodeCreate
@@ -38,8 +39,7 @@ trait JdbcPipelinedInsertionsSpec extends Inside with OptionValues with Matchers
       inside(result.value.transaction) { case Some(transaction) =>
         transaction.commandId shouldBe tx.commandId.get
         transaction.offset shouldBe ApiOffset.toApiString(offset)
-        transaction.effectiveAt.value.seconds shouldBe tx.ledgerEffectiveTime.getEpochSecond
-        transaction.effectiveAt.value.nanos shouldBe tx.ledgerEffectiveTime.getNano
+        TimestampConversion.toLf(transaction.effectiveAt.value, TimestampConversion.ConversionMode.Exact) shouldBe tx.ledgerEffectiveTime
         transaction.transactionId shouldBe tx.transactionId
         transaction.workflowId shouldBe tx.workflowId.getOrElse("")
         inside(transaction.events.loneElement.event.created) { case Some(created) =>

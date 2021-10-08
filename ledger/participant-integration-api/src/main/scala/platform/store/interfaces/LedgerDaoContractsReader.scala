@@ -3,7 +3,6 @@
 
 package com.daml.platform.store.interfaces
 
-import java.time.Instant
 import com.daml.lf.data.Ref.Party
 import com.daml.lf.data.Time.Timestamp
 import com.daml.lf.transaction.GlobalKey

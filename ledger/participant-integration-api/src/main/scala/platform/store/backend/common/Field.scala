@@ -5,7 +5,6 @@ package com.daml.platform.store.backend.common
 
 import java.lang
 import java.sql.PreparedStatement
-import java.util.concurrent.TimeUnit
 
 import scala.reflect.ClassTag
 

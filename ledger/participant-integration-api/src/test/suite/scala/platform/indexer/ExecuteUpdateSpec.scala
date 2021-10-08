@@ -3,14 +3,13 @@
 
 package com.daml.platform.indexer
 
-import java.time.Instant
-
 import akka.stream.scaladsl.{Flow, Source}
 import com.codahale.metrics.MetricRegistry
 import com.daml.ledger.api.testing.utils.AkkaBeforeAndAfterAll
 import com.daml.ledger.offset.Offset
 import com.daml.ledger.participant.state.{v2 => state}
 import com.daml.ledger.resources.TestResourceContext
+import com.daml.lf.data.Time.Timestamp
 import com.daml.lf.data.{Bytes, ImmArray, Ref, Time}
 import com.daml.lf.transaction.{TransactionVersion, VersionedTransaction}
 import com.daml.lf.{crypto, transaction}
@@ -50,7 +49,7 @@ final class ExecuteUpdateSpec
   private val someMetrics = new Metrics(new MetricRegistry)
   private val someParticipantId = Ref.ParticipantId.assertFromString("some-participant")
   private val prepareUpdateParallelism = 2
-  private val ledgerEffectiveTime = Instant.EPOCH
+  private val ledgerEffectiveTime = Timestamp.Epoch
 
   private val packageUploadRejectionReason = "some rejection reason"
   private val submissionId = Ref.SubmissionId.assertFromString("s1")
@@ -82,7 +81,7 @@ final class ExecuteUpdateSpec
   private val transactionAcceptedOffsetPair = OffsetUpdate(currentOffset, txAccepted)
   private val packageUploadRejected = state.Update.PublicPackageUploadRejected(
     submissionId = submissionId,
-    recordTime = Time.Timestamp(ledgerEffectiveTime.toEpochMilli),
+    recordTime = ledgerEffectiveTime,
     rejectionReason = packageUploadRejectionReason,
   )
   private val metadataUpdateOffsetPair = OffsetUpdate(currentOffset, packageUploadRejected)

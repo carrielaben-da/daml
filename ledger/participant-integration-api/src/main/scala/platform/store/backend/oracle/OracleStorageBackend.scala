@@ -32,7 +32,6 @@ import com.daml.platform.store.backend.{
 }
 
 import java.sql.Connection
-import java.time.Instant
 import com.daml.ledger.offset.Offset
 import com.daml.lf.data.Time.Timestamp
 import com.daml.platform.store.backend.EventStorageBackend.FilterParams

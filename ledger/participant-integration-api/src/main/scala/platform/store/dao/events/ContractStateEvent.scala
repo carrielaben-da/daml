@@ -3,7 +3,6 @@
 
 package com.daml.platform.store.dao.events
 
-import java.time.Instant
 import com.daml.ledger.offset.Offset
 import com.daml.lf.data.Time.Timestamp
 

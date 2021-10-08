@@ -4,7 +4,6 @@
 package com.daml.platform.store.appendonlydao.events
 
 import java.sql.Connection
-import java.time.Instant
 import com.daml.ledger.api.domain
 import com.daml.ledger.participant.state.{v1, v2}
 import com.daml.lf.data.Time.Timestamp

@@ -8,7 +8,7 @@ import anorm.SqlParser.{flatten, str}
 import anorm.{Macro, RowParser, SQL, SqlParser}
 import com.daml.ledger.offset.Offset
 import com.daml.ledger.participant.state.index.v2.PackageDetails
-import com.daml.platform.store.Conversions.{instantFromMicros, ledgerString, offset, timestampFromMicros}
+import com.daml.platform.store.Conversions.{ledgerString, offset, timestampFromMicros}
 import com.daml.lf.data.Ref.PackageId
 import com.daml.lf.data.Time.Timestamp
 import com.daml.platform.store.SimpleSqlAsVectorOf.SimpleSqlAsVectorOf

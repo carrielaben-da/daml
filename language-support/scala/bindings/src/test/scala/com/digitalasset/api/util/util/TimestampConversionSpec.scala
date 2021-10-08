@@ -4,13 +4,12 @@
 package com.daml.api.util
 
 import java.time.Instant
-
 import com.daml.ledger.api.v1.value.Value.{Sum => VSum}
 import TimestampConversion._
-
 import org.scalacheck.Gen
 import org.scalacheck.Prop
 import Prop.exists
+import com.daml.lf.data.Time
 import org.scalatestplus.scalacheck.{Checkers, ScalaCheckDrivenPropertyChecks}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -81,6 +80,39 @@ class TimestampConversionSpec
       }
     }
   }
+
+  "fromLf" when {
+    "given a value in specified domain" should {
+      "be retracted by toLf" in forAll(lfTimestampGen) { ts =>
+        toLf(fromLf(ts), ConversionMode.Exact) shouldBe ts
+      }
+    }
+  }
+
+  "toLf" when {
+    "given a valid microsecond timestamp" should {
+      "be retracted by fromLf" in forAll(anyMicroInRange) { ts =>
+        val protoTs = fromInstant(ts)
+        fromLf(toLf(protoTs, ConversionMode.Exact)) shouldBe protoTs
+      }
+    }
+
+    "given a valid nanosecond timestamp" should {
+      "be retracted by fromLf" in forAll(anyTimeInRange) { ts =>
+        val protoTs = fromInstant(ts)
+        val down = toLf(protoTs, ConversionMode.Down)
+        val up = toLf(protoTs, ConversionMode.Up)
+        val halfUp = toLf(protoTs, ConversionMode.HalfUp)
+        down.toInstant should be <= ts
+        up.toInstant should be >= ts
+        down should be < up
+        halfUp should (be (down) or be (up))
+        (up.micros - down.micros) shouldBe 1000
+        up.toInstant.truncatedTo(java.time.temporal.ChronoUnit.MICROS) shouldBe up.toInstant
+        down.toInstant.truncatedTo(java.time.temporal.ChronoUnit.MICROS) shouldBe down.toInstant
+      }
+    }
+  }
 }
 
 object TimestampConversionSpec {
@@ -110,4 +142,6 @@ object TimestampConversionSpec {
 
   val anyMicroInRange: Gen[Instant] =
     timeGen(MIN, MAX, microsOnly = true)
+
+  val lfTimestampGen: Gen[Time.Timestamp] = arbitrary[Long] map Time.Timestamp.assertFromLong
 }

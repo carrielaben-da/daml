@@ -4,22 +4,17 @@
 package com.daml.platform.store.dao.events
 
 import java.io.InputStream
-import java.time.Instant
-
 import anorm.SqlParser._
 import anorm.{RowParser, SqlParser, SqlStringInterpolation}
 import com.codahale.metrics.Timer
+import com.daml.lf.data.Time.Timestamp
 import com.daml.logging.LoggingContext
 import com.daml.metrics.{Metrics, Timed}
 import com.daml.platform.store.Conversions._
 import com.daml.platform.store.DbType
 import com.daml.platform.store.interfaces.LedgerDaoContractsReader._
 import com.daml.platform.store.dao.DbDispatcher
-import com.daml.platform.store.dao.events.SqlFunctions.{
-  H2SqlFunctions,
-  OracleSqlFunctions,
-  PostgresSqlFunctions,
-}
+import com.daml.platform.store.dao.events.SqlFunctions.{H2SqlFunctions, OracleSqlFunctions, PostgresSqlFunctions}
 import com.daml.platform.store.dao.events.ContractsReader._
 import com.daml.platform.store.interfaces.LedgerDaoContractsReader
 import com.daml.platform.store.serialization.{Compression, ValueSerializer}
@@ -36,14 +31,15 @@ private[dao] sealed class ContractsReader(
 
   override def lookupMaximumLedgerTime(ids: Set[ContractId])(implicit
       loggingContext: LoggingContext
-  ): Future[Option[Instant]] =
+  ): Future[Option[Timestamp]] =
     Timed.future(
       metrics.daml.index.db.lookupMaximumLedgerTime,
       dispatcher
         .executeSql(metrics.daml.index.db.lookupMaximumLedgerTimeDbMetrics) { implicit connection =>
           committedContracts.lookupMaximumLedgerTime(ids)
         }
-        .map(_.get),
+        .map(_.get)
+        .map(_.map(Timestamp.assertFromInstant)),
     )
 
   override def lookupContractKey(

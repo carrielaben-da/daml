@@ -3,7 +3,6 @@
 
 package com.daml.platform.apiserver
 
-import java.time.Instant
 import akka.NotUsed
 import akka.stream.scaladsl.Source
 import com.daml.daml_lf_dev.DamlLf

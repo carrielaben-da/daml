@@ -6,7 +6,7 @@ package com.daml.platform.store.backend.common
 import java.sql.Connection
 import anorm.{RowParser, SQL}
 import com.daml.lf.data.Time.Timestamp
-import com.daml.platform.store.Conversions.{instantFromMicros, timestampFromMicros}
+import com.daml.platform.store.Conversions.timestampFromMicros
 import com.daml.platform.store.backend.DeduplicationStorageBackend
 
 private[backend] trait DeduplicationStorageBackendTemplate extends DeduplicationStorageBackend {

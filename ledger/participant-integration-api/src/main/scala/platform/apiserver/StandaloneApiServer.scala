@@ -4,8 +4,7 @@
 package com.daml.platform.apiserver
 
 import java.io.File
-import java.time.{Clock, Instant}
-
+import java.time.Clock
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.daml.api.util.TimeProvider
@@ -18,15 +17,11 @@ import com.daml.ledger.configuration.LedgerId
 import com.daml.ledger.participant.state.{v2 => state}
 import com.daml.ledger.resources.{Resource, ResourceContext, ResourceOwner}
 import com.daml.lf.data.Ref
+import com.daml.lf.data.Time.Timestamp
 import com.daml.lf.engine.{Engine, ValueEnricher}
 import com.daml.logging.{ContextualizedLogger, LoggingContext}
 import com.daml.metrics.Metrics
-import com.daml.platform.configuration.{
-  CommandConfiguration,
-  PartyConfiguration,
-  ServerRole,
-  SubmissionConfiguration,
-}
+import com.daml.platform.configuration.{CommandConfiguration, PartyConfiguration, ServerRole, SubmissionConfiguration}
 import com.daml.platform.index.JdbcIndex
 import com.daml.platform.packages.InMemoryPackageStore
 import com.daml.platform.services.time.TimeProviderType
@@ -166,7 +161,7 @@ final class StandaloneApiServer(
     config.archiveFiles
       .foldLeft[Either[(String, File), InMemoryPackageStore]](Right(InMemoryPackageStore.empty)) {
         case (storeE, f) =>
-          storeE.flatMap(_.withDarFile(Instant.now(), None, f).left.map(_ -> f))
+          storeE.flatMap(_.withDarFile(Timestamp.now(), None, f).left.map(_ -> f))
       }
       .fold({ case (err, file) => sys.error(s"Could not load package $file: $err") }, identity)
   }

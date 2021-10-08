@@ -14,7 +14,6 @@ import com.daml.platform.store.Conversions.{
   contractId,
   eventId,
   identifier,
-  instantFromMicros,
   offset,
   timestampFromMicros,
 }
