@@ -19,7 +19,6 @@ import com.daml.ledger.resources.{Resource, ResourceContext, ResourceOwner}
 import com.daml.lf.data.Time
 import com.daml.logging.LoggingContext.newLoggingContext
 import com.daml.metrics.{JvmMetricSet, Metrics}
-import com.daml.platform.configuration.ServerRole
 import com.daml.platform.indexer.{JdbcIndexer, StandaloneIndexerServer}
 import com.daml.platform.store.LfValueTranslationCache
 import com.daml.testing.postgresql.PostgresResource
@@ -69,7 +68,6 @@ class IndexerBenchmark() {
       println("Creating read service and indexer...")
       val readService = createReadService(updates)
       val indexerFactory = new JdbcIndexer.Factory(
-        ServerRole.Indexer,
         config.indexerConfig,
         readService,
         indexerEC,
@@ -90,8 +88,7 @@ class IndexerBenchmark() {
           .result(
             StandaloneIndexerServer
               .migrateOnly(
-                jdbcUrl = config.indexerConfig.jdbcUrl,
-                enableAppendOnlySchema = config.indexerConfig.enableAppendOnlySchema,
+                jdbcUrl = config.indexerConfig.jdbcUrl
               )
               .map(_ => indexerFactory.initialized())(indexerEC),
             Duration(5, "minute"),
@@ -134,7 +131,6 @@ class IndexerBenchmark() {
              |  jdbcUrl:  ${config.indexerConfig.jdbcUrl}
              |
              |Indexer parameters:
-             |  enableAppendOnlySchema:    ${config.indexerConfig.enableAppendOnlySchema}
              |  maxInputBufferSize:        ${config.indexerConfig.maxInputBufferSize}
              |  inputMappingParallelism:   ${config.indexerConfig.inputMappingParallelism}
              |  ingestionParallelism:      ${config.indexerConfig.ingestionParallelism}
