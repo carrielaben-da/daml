@@ -275,11 +275,6 @@ NEXT_SERVERS = {
     },
 }
 
-# Server arguments that enable the append-only schema
-APPEND_ONLY_ARGS = [
-    "--enable-append-only-schema",
-]
-
 # Full conformance test
 server_conformance_test(
     name = "next-conformance-test",
@@ -290,7 +285,7 @@ server_conformance_test(
     ],
     server_args = [
         "--max-deduplication-duration=PT5S",
-    ] + APPEND_ONLY_ARGS,
+    ],
     servers = NEXT_SERVERS,
     test_tool_args = [
         "--open-world",
@@ -309,7 +304,7 @@ server_conformance_test(
     name = "next-conformance-test-closed-world",
     server_args = [
         "--implicit-party-allocation=false",
-    ] + APPEND_ONLY_ARGS,
+    ],
     servers = NEXT_SERVERS,
     test_tool_args = [
         "--verbose",
@@ -323,7 +318,7 @@ server_conformance_test(
     server_args = [
         "--static-time",
         "--max-deduplication-duration=PT5S",
-    ] + APPEND_ONLY_ARGS,
+    ],
     servers = NEXT_SERVERS,
     test_tool_args = [
         "--static-time",

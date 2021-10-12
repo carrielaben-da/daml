@@ -334,11 +334,6 @@ APPEND_ONLY_SCHEMA_SERVERS = {
     "h2database": SERVERS["h2database"],
 }
 
-# Server arguments that enable the append-only schema
-APPEND_ONLY_ARGS = [
-    "--enable-append-only-schema",
-]
-
 # Full conformance test (Postgres)
 server_conformance_test(
     name = "conformance-test",
@@ -348,7 +343,7 @@ server_conformance_test(
     ],
     server_args = [
         "--contract-id-seeding=testing-weak",
-    ] + APPEND_ONLY_ARGS,
+    ],
     servers = {"postgresql": SERVERS["postgresql"]},
     test_tool_args = [
         "--concurrent-test-runs=1",  # sandbox classic doesn't scale well with concurrent tests (almost no effect on overall run time)
@@ -371,7 +366,7 @@ server_conformance_test(
     name = "conformance-test-h2",
     server_args = [
         "--contract-id-seeding=testing-weak",
-    ] + APPEND_ONLY_ARGS,
+    ],
     servers = {"h2database": SERVERS["h2database"]},
     test_tool_args = [
         "--concurrent-test-runs=1",  # sandbox classic doesn't scale well with concurrent tests (almost no effect on overall run time)
@@ -390,7 +385,7 @@ server_conformance_test(
     server_args = [
         "--static-time",
         "--contract-id-seeding=testing-weak",
-    ] + APPEND_ONLY_ARGS,
+    ],
     servers = APPEND_ONLY_SCHEMA_SERVERS,
     test_tool_args = [
         "--concurrent-test-runs=1",  # sandbox classic doesn't scale well with concurrent tests (almost no effect on overall run time)
@@ -409,7 +404,7 @@ server_conformance_test(
     lf_versions = ["legacy"],
     server_args = [
         "--contract-id-seeding=no",
-    ] + APPEND_ONLY_ARGS,
+    ],
     servers = APPEND_ONLY_SCHEMA_SERVERS,
     test_tool_args = [
         "--concurrent-test-runs=1",  # sandbox classic doesn't scale well with concurrent tests (almost no effect on overall run time)
