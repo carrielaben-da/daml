@@ -7,7 +7,7 @@ import java.time.{Duration, Instant}
 
 import com.codahale.metrics.MetricRegistry
 import com.daml.ledger.api.DeduplicationPeriod
-import com.daml.ledger.api.domain.{ApplicationId, CommandId, Commands, LedgerId, SubmissionId}
+import com.daml.ledger.api.domain.{ApplicationId, CommandId, Commands, LedgerId}
 import com.daml.ledger.configuration.{Configuration, LedgerTimeModel}
 import com.daml.ledger.participant.state.index.v2.{ContractStore, IndexPackagesService}
 import com.daml.lf.crypto.Hash
@@ -60,7 +60,7 @@ class StoreBackedCommandExecutorSpec
         workflowId = None,
         applicationId = ApplicationId(Ref.ApplicationId.assertFromString("applicationId")),
         commandId = CommandId(Ref.CommandId.assertFromString("commandId")),
-        submissionId = SubmissionId(Ref.SubmissionId.assertFromString("submissionId")),
+        submissionId = None,
         actAs = Set.empty,
         readAs = Set.empty,
         submittedAt = Instant.EPOCH,

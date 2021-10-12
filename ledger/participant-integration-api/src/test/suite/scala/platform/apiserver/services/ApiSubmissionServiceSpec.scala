@@ -5,7 +5,7 @@ package com.daml.platform.apiserver.services
 
 import com.codahale.metrics.MetricRegistry
 import com.daml.error.ErrorCause
-import com.daml.ledger.api.domain.{CommandId, Commands, LedgerId, PartyDetails, SubmissionId}
+import com.daml.ledger.api.domain.{CommandId, Commands, LedgerId, PartyDetails}
 import com.daml.ledger.api.messages.command.submission.SubmitRequest
 import com.daml.ledger.api.testing.utils.AkkaBeforeAndAfterAll
 import com.daml.ledger.api.{DeduplicationPeriod, DomainMocks}
@@ -44,7 +44,6 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.{Assertion, Inside}
 
 import java.time.{Duration, Instant}
-import java.util.UUID
 import java.util.concurrent.CompletableFuture.completedFuture
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.{ExecutionContext, Future}
@@ -359,7 +358,6 @@ class ApiSubmissionServiceSpec
         writeService,
         partyManagementService,
         implicitPartyAllocation = true,
-        deduplicationEnabled = true,
         mockIndexSubmissionService = indexSubmissionService,
         commandExecutor = mockCommandExecutor,
       )
@@ -437,7 +435,7 @@ object ApiSubmissionServiceSpec {
         commandId = CommandId(
           Ref.CommandId.assertFromString(s"commandId-${commandId.incrementAndGet()}")
         ),
-        submissionId = SubmissionId(Ref.SubmissionId.assertFromString(UUID.randomUUID().toString)),
+        submissionId = None,
         actAs = Set.empty,
         readAs = Set.empty,
         submittedAt = Instant.MIN,

@@ -648,7 +648,7 @@ private class JdbcLedgerDao(
               queries
                 .prepareRejectionInsert(
                   completionInfo =
-                    state.CompletionInfo(actAs, applicationId, commandId, None, Some(submissionId)),
+                    state.CompletionInfo(actAs, applicationId, commandId, None, submissionId),
                   offset = offset,
                   recordTime = recordTime,
                   reason = reason.toParticipantStateRejectionReason,
