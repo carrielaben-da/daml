@@ -81,7 +81,7 @@ abstract class ResetServiceITBase
   override def timeLimit: Span = scaled(30.seconds)
 
   override protected def config: SandboxConfig =
-    super.config.copy(ledgerIdMode = LedgerIdMode.Dynamic)
+    super.config.copy(ledgerIdMode = LedgerIdMode.Dynamic, enableAppendOnlySchema = true)
 
   protected implicit val ec: ExecutionContext = ExecutionContext.global
 

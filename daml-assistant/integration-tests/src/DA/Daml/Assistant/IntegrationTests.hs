@@ -113,6 +113,7 @@ damlStart startCwd tmpDir = do
             , "sandbox-options:"
             , "  - --ledgerid=MyLedger"
             , "  - --wall-clock-time"
+            , "  - --enable-append-only-schema"
             , "codegen:"
             , "  js:"
             , "    output-directory: ui/daml.js"
@@ -206,6 +207,7 @@ quickSandbox projDir = do
                         , show sandboxPort
                         , "--"
                         , "--static-time"
+                        , "--enable-append-only-schema"
                         , ".daml/dist/quickstart-0.0.1.dar"
                         ])
                     {std_out = UseHandle devNull, create_group = True, cwd = Just projDir}
@@ -568,6 +570,7 @@ damlStartTests getDamlStart =
                 withDamlServiceIn tmpDir "start"
                     [ "--sandbox-port=0"
                     , "--sandbox-option=--ledgerid=MyLedger"
+                    , "--sandbox-option=--enable-append-only-schema"
                     , "--json-api-port=0"
                     , "--json-api-option=--port-file=jsonapi.port"
                     ] $ do
@@ -588,7 +591,7 @@ damlStartTests getDamlStart =
                         queryResponse <- httpLbs queryRequest manager
                         responseBody queryResponse @?=
                             "{\"result\":{\"identifier\":\"Alice\",\"isLocal\":true},\"status\":200}"
-        subtest "daml start --sandbox-option --port=X" $
+        subtest "daml start --sandbox-option --port=X --sandbox-option --enable-append-only-schema" $
             withTempDir $ \tmpDir -> do
                 p :: Int <- fromIntegral <$> getFreePort
                 writeFileUTF8 (tmpDir </> "daml.yaml") $
@@ -605,6 +608,7 @@ damlStartTests getDamlStart =
                 withDamlServiceIn tmpDir "start"
                     [ "--sandbox-option=--port=" <> show p
                     , "--sandbox-option=--ledgerid=MyLedger"
+                    , "--sandbox-option=--enable-append-only-schema"
                     , "--json-api-port=0"
                     , "--json-api-option=--port-file=jsonapi.port"
                     ] $ do
@@ -676,6 +680,7 @@ quickstartTests quickstartDir mvnDir getSandbox =
             p :: Int <- fromIntegral <$> getFreePort
             withDamlServiceIn quickstartDir "sandbox-classic"
                 [ "--wall-clock-time"
+                , "--enable-append-only-schema"
                 , "--port"
                 , show p
                 , ".daml/dist/quickstart-0.0.1.dar"

@@ -20,7 +20,7 @@ trait SandboxFixture extends AbstractSandboxFixture with SuiteResource[(SandboxS
   self: Suite =>
 
   // TODO append-only: remove after the mutating schema is removed
-  protected def enableAppendOnlySchema: Boolean = false
+  protected def enableAppendOnlySchema: Boolean = true
 
   override protected def config: SandboxConfig =
     super.config.copy(

@@ -84,7 +84,7 @@ object Config {
       metricsReporter = None,
       metricsReportingInterval = Duration.ofSeconds(10),
       allowedLanguageVersions = LanguageVersion.StableVersions,
-      enableAppendOnlySchema = false,
+      enableAppendOnlySchema = true,
       enableMutableContractStateCache = false,
       enableInMemoryFanOutForLedgerApi = false,
       maxDeduplicationDuration = None,

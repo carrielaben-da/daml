@@ -201,6 +201,7 @@ object HttpServiceTestFixture extends LazyLogging with Assertions with Inside {
       ledgerIdMode = LedgerIdMode.Static(ledgerId),
       authService = authService,
       seeding = Some(Seeding.Weak),
+      enableAppendOnlySchema = true,
     )
 
   private def clientConfig[A](
