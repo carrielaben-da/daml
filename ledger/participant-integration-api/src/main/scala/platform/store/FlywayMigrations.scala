@@ -55,7 +55,9 @@ private[platform] class FlywayMigrations(
       .load()
     logger.info("Running Flyway migration...")
     val stepsTaken = flyway.migrate()
-    logger.info(s"Flyway schema migration finished successfully, applying $stepsTaken steps.")
+    logger.info(
+      s"Flyway schema migration finished successfully, applying ${stepsTaken.migrationsExecuted} steps."
+    )
   }
 
   def reset(): Future[Unit] = run { configBase =>

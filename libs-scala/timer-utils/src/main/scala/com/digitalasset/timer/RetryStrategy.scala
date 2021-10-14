@@ -70,7 +70,7 @@ object RetryStrategy {
 
 }
 
-final class RetryStrategy private (
+final case class RetryStrategy private (
     attempts: Option[Int],
     firstWaitTime: Duration,
     waitTimeCap: Duration,
@@ -79,6 +79,12 @@ final class RetryStrategy private (
 ) {
 
   private def clip(t: Duration): Duration = t.min(waitTimeCap).max(0.millis)
+
+  def withCap(waitTimeCap: Duration): RetryStrategy =
+    this.copy(waitTimeCap = waitTimeCap)
+
+  def withPredicate(predicate: PartialFunction[Throwable, Boolean]): RetryStrategy =
+    this.copy(predicate = predicate)
 
   def apply[A](run: (Int, Duration) => Future[A])(implicit ec: ExecutionContext): Future[A] = {
     val startTime = System.nanoTime()

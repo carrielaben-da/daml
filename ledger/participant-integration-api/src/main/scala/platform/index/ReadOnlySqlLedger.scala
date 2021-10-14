@@ -107,10 +107,13 @@ private[platform] object ReadOnlySqlLedger {
         case _: MismatchException.LedgerId => false
         case _ => false
       }
-      val retryDelay = 5.seconds
+      val firstWaitTime = 100.millis
+      val waitTimeCap = 5.seconds
       val maxAttempts = 100
-      RetryStrategy.constant(attempts = Some(maxAttempts), waitTime = retryDelay)(predicate) {
-        (attempt, _) =>
+      RetryStrategy
+        .exponentialBackoff(attempts = maxAttempts, firstWaitTime = firstWaitTime)
+        .withCap(waitTimeCap)
+        .withPredicate(predicate) { (attempt, retryDelay) =>
           ledgerDao
             .lookupLedgerId()
             .flatMap {
@@ -128,7 +131,7 @@ private[platform] object ReadOnlySqlLedger {
                 )
                 Future.failed(new LedgerIdNotFoundException(attempt))
             }
-      }
+        }
     }
 
     private def ledgerDaoOwner(
