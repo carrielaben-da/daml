@@ -487,9 +487,11 @@ object LedgerApiErrors extends LedgerApiErrorGroup {
       }
 
       @Explanation(
-        """TODO: Explanations needs yet to be filled out"""
+        "The transaction does not exist or the requesting set of parties are not authorized to fetch it."
       )
-      @Resolution("TODO: Resolution needs yet to be filled out")
+      @Resolution(
+        "Check the transaction id and verify that the requested transaction is visible to the requesting parties."
+      )
       object TransactionNotFound
           extends ErrorCode(
             id = "TRANSACTION_NOT_FOUND",
@@ -499,7 +501,7 @@ object LedgerApiErrors extends LedgerApiErrorGroup {
         case class Reject(transactionId: String)(implicit loggingContext: ContextualizedErrorLogger)
             extends LoggingTransactionErrorImpl(cause = "Transaction not found, or not visible.") {
           override def resources: Seq[(ErrorResource, String)] = Seq(
-            (ErrorResource.ContractKey, transactionId)
+            (ErrorResource.TransactionId, transactionId)
           )
         }
       }
