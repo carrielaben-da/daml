@@ -145,7 +145,7 @@ object SandboxConfig {
       engineMode = EngineMode.Stable,
       managementServiceTimeout = DefaultManagementServiceTimeout,
       sqlStartMode = Some(DefaultSqlStartupMode),
-      enableAppendOnlySchema = true,
+      enableAppendOnlySchema = false,
       enableCompression = false,
       enableSelfServiceErrorCodes = false,
     )

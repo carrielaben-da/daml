@@ -43,7 +43,6 @@ data SandboxConfig = SandboxConfig
     , mbClientAuth :: Maybe ClientAuth
     , mbSharedSecret :: Maybe String
     , mbLedgerId :: Maybe String
-    , enableAppendOnlySchema :: Bool
     }
 
 defaultSandboxConf :: SandboxConfig
@@ -54,7 +53,6 @@ defaultSandboxConf = SandboxConfig
     , mbClientAuth = Nothing
     , mbSharedSecret = Nothing
     , mbLedgerId = Just "MyLedger"
-    , enableAppendOnlySchema = True
     }
 
 getSandboxProc :: SandboxConfig -> FilePath -> IO CreateProcess
@@ -69,13 +67,9 @@ getSandboxProc SandboxConfig{..} portFile = do
                 , "--crt", certDir </> "server.crt"
                 ]
         else pure []
-    appendOnlySchema <- if enableAppendOnlySchema
-            then do pure [ "--enable-append-only-schema" ]
-            else pure []
     pure $ proc sandbox $ concat
         [ [ "--port=0", "--port-file", portFile ]
         , tlsArgs
-        , appendOnlySchema
         , [ timeArg ]
         , [ "--client-auth=" <> clientAuthArg auth | Just auth <- [mbClientAuth] ]
         , [ "--auth-jwt-hs256-unsafe=" <> secret | Just secret <- [mbSharedSecret] ]
