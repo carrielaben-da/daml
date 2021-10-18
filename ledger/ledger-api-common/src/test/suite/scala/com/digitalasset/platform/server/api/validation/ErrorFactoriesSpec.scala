@@ -3,23 +3,21 @@
 
 package com.daml
 
-import com.daml.error.{
-  ContextualizedErrorLogger,
-  DamlContextualizedErrorLogger,
-  ErrorCodesVersionSwitcher,
-}
-import com.daml.ledger.api.domain.LedgerId
-import com.daml.logging.{ContextualizedLogger, LoggingContext}
-import com.daml.platform.server.api.validation.ErrorFactories
-import com.daml.platform.server.api.validation.ErrorFactories._
-import com.google.rpc.{ErrorInfo, RequestInfo, ResourceInfo, RetryInfo, Status}
+import error.{ContextualizedErrorLogger, DamlContextualizedErrorLogger, ErrorCodesVersionSwitcher}
+import ledger.api.domain.LedgerId
+import lf.data.Ref
+import logging.{ContextualizedLogger, LoggingContext}
+import platform.server.api.validation.ErrorFactories
+import platform.server.api.validation.ErrorFactories._
+
+import com.google.protobuf
+import com.google.rpc._
 import io.grpc.Status.Code
 import io.grpc.StatusRuntimeException
 import io.grpc.protobuf.StatusProto
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.wordspec.AnyWordSpec
-import com.google.protobuf
 
 import scala.jdk.CollectionConverters._
 
@@ -35,7 +33,6 @@ class ErrorFactoriesSpec extends AnyWordSpec with Matchers with TableDrivenPrope
     ErrorDetails.RequestInfoDetail("trace-id")
 
   "ErrorFactories" should {
-
     "return malformedPackageId" in {
       assertVersionedError(
         _.malformedPackageId(request = "request123", message = "message123")(
@@ -67,6 +64,22 @@ class ErrorFactoriesSpec extends AnyWordSpec with Matchers with TableDrivenPrope
           ErrorDetails.ErrorInfoDetail("PACKAGE_NOT_FOUND"),
           DefaultTraceIdRequestInfo,
           ErrorDetails.ResourceInfoDetail("PACKAGE", "packageId123"),
+        )
+      )
+    }
+
+    "return a transactionNotFound error" in {
+      assertVersionedError(_.transactionNotFound(Ref.TransactionId.assertFromString("tId")))(
+        v1_code = Code.NOT_FOUND,
+        v1_message = "Transaction not found or not visible.",
+        v1_details = Seq.empty,
+        v2_code = Code.NOT_FOUND,
+        v2_message =
+          s"TRANSACTION_NOT_FOUND(11,$correlationId): Transaction not found or not visible.",
+        v2_details = Seq[ErrorDetails.ErrorDetail](
+          ErrorDetails.ErrorInfoDetail("TRANSACTION_NOT_FOUND"),
+          DefaultTraceIdRequestInfo,
+          ErrorDetails.ResourceInfoDetail("TRANSACTION_ID", "tId"),
         ),
       )
     }
