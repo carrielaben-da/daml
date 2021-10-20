@@ -6,10 +6,10 @@ package com.daml.platform.apiserver.services.admin
 import java.time.{Duration, Instant}
 import java.util.concurrent.{CompletableFuture, CompletionStage}
 import java.util.zip.ZipInputStream
-
 import akka.stream.scaladsl.Source
 import com.daml.daml_lf_dev.DamlLf
 import com.daml.daml_lf_dev.DamlLf.Archive
+import com.daml.error.ErrorCodesVersionSwitcher
 import com.daml.ledger.api.domain.LedgerOffset.Absolute
 import com.daml.ledger.api.domain.PackageEntry
 import com.daml.ledger.api.testing.utils.AkkaBeforeAndAfterAll
@@ -49,55 +49,64 @@ class ApiPackageManagementServiceSpec
 
   private implicit val loggingContext: LoggingContext = LoggingContext.ForTesting
 
-  "ApiPackageManagementService" should {
-    "propagate trace context" in {
-      val apiService = createApiService()
+  addTests(true)
+  addTests(false)
 
-      val span = anEmptySpan()
-      val scope = span.makeCurrent()
-      apiService
-        .uploadDarFile(UploadDarFileRequest(ByteString.EMPTY, aSubmissionId))
-        .andThen { case _ =>
-          scope.close()
-          span.end()
-        }
-        .map { _ =>
-          spanExporter.finishedSpanAttributes should contain(anApplicationIdSpanAttribute)
-        }
+  def addTests(useSelfServiceErrorCodes: Boolean): Unit = {
+    val suffix = s"(enableSelfServiceErrorCodes=${useSelfServiceErrorCodes})"
+    val errorCodesVersionSwitcher = new ErrorCodesVersionSwitcher(useSelfServiceErrorCodes)
+
+    s"ApiPackageManagementService $suffix" should {
+      "propagate trace context" in {
+        val apiService = createApiService()
+
+        val span = anEmptySpan()
+        val scope = span.makeCurrent()
+        apiService
+          .uploadDarFile(UploadDarFileRequest(ByteString.EMPTY, aSubmissionId))
+          .andThen { case _ =>
+            scope.close()
+            span.end()
+          }
+          .map { _ =>
+            spanExporter.finishedSpanAttributes should contain(anApplicationIdSpanAttribute)
+          }
+      }
     }
-  }
 
-  private def createApiService(): PackageManagementServiceGrpc.PackageManagementService = {
-    val mockDarReader = mock[GenDarReader[Archive]]
-    when(mockDarReader.readArchive(any[String], any[ZipInputStream], any[Int]))
-      .thenReturn(Right(new Dar[Archive](anArchive, List.empty)))
+    def createApiService(): PackageManagementServiceGrpc.PackageManagementService = {
+      val mockDarReader = mock[GenDarReader[Archive]]
+      when(mockDarReader.readArchive(any[String], any[ZipInputStream], any[Int]))
+        .thenReturn(Right(new Dar[Archive](anArchive, List.empty)))
 
-    val mockEngine = mock[Engine]
-    when(
-      mockEngine.validatePackages(any[Map[PackageId, Ast.Package]])
-    ).thenReturn(Right(()))
+      val mockEngine = mock[Engine]
+      when(
+        mockEngine.validatePackages(any[Map[PackageId, Ast.Package]])
+      ).thenReturn(Right(()))
 
-    val mockIndexTransactionsService = mock[IndexTransactionsService]
-    when(mockIndexTransactionsService.currentLedgerEnd())
-      .thenReturn(Future.successful(Absolute(Ref.LedgerString.assertFromString("0"))))
+      val mockIndexTransactionsService = mock[IndexTransactionsService]
+      when(mockIndexTransactionsService.currentLedgerEnd())
+        .thenReturn(Future.successful(Absolute(Ref.LedgerString.assertFromString("0"))))
 
-    val mockIndexPackagesService = mock[IndexPackagesService]
-    when(mockIndexPackagesService.packageEntries(any[Option[Absolute]])(any[LoggingContext]))
-      .thenReturn(
-        Source.single(
-          PackageEntry.PackageUploadAccepted(aSubmissionId, Instant.EPOCH)
+      val mockIndexPackagesService = mock[IndexPackagesService]
+      when(mockIndexPackagesService.packageEntries(any[Option[Absolute]])(any[LoggingContext]))
+        .thenReturn(
+          Source.single(
+            PackageEntry.PackageUploadAccepted(aSubmissionId, Instant.EPOCH)
+          )
         )
-      )
 
-    ApiPackageManagementService.createApiService(
-      mockIndexPackagesService,
-      mockIndexTransactionsService,
-      TestWritePackagesService,
-      Duration.ZERO,
-      mockEngine,
-      mockDarReader,
-      _ => Ref.SubmissionId.assertFromString("aSubmission"),
-    )
+      ApiPackageManagementService.createApiService(
+        mockIndexPackagesService,
+        mockIndexTransactionsService,
+        TestWritePackagesService,
+        Duration.ZERO,
+        mockEngine,
+        errorCodesVersionSwitcher,
+        mockDarReader,
+        _ => Ref.SubmissionId.assertFromString("aSubmission"),
+      )
+    }
   }
 }
 
