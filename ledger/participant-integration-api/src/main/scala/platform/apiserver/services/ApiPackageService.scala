@@ -21,7 +21,8 @@ import scala.concurrent.{ExecutionContext, Future}
 private[apiserver] final class ApiPackageService private (
     backend: IndexPackagesService,
     errorCodesVersionSwitcher: ErrorCodesVersionSwitcher,
-)(implicit executionContext: ExecutionContext, loggingContext: LoggingContext)
+    loggingContext: LoggingContext,
+)(implicit executionContext: ExecutionContext)
     extends PackageService
     with GrpcApiService {
 
@@ -29,12 +30,28 @@ private[apiserver] final class ApiPackageService private (
 
   private val errorFactories = ErrorFactories(errorCodesVersionSwitcher)
 
-  override def bindService(): ServerServiceDefinition =
-    PackageServiceGrpc.bindService(this, executionContext)
+  override def listPackages(request: ListPackagesRequest): Future[ListPackagesResponse] = {
+    doListPackages(request)(loggingContext)
+  }
+
+  override def getPackage(request: GetPackageRequest): Future[GetPackageResponse] = {
+    doGetPackage(request)(loggingContext)
+  }
+
+  override def getPackageStatus(
+      request: GetPackageStatusRequest
+  ): Future[GetPackageStatusResponse] = {
+    doGetPackageStatus(request)(loggingContext)
+  }
 
   override def close(): Unit = ()
 
-  override def listPackages(request: ListPackagesRequest): Future[ListPackagesResponse] = {
+  override def bindService(): ServerServiceDefinition =
+    PackageServiceGrpc.bindService(this, executionContext)
+
+  private def doListPackages(
+      request: ListPackagesRequest
+  )(implicit loggingContext: LoggingContext): Future[ListPackagesResponse] = {
     logger.info(s"Received request to list packages: $request")
     backend
       .listLfPackages()
@@ -42,7 +59,9 @@ private[apiserver] final class ApiPackageService private (
       .andThen(logger.logErrorsOnCall[ListPackagesResponse])
   }
 
-  override def getPackage(request: GetPackageRequest): Future[GetPackageResponse] =
+  private def doGetPackage(
+      request: GetPackageRequest
+  )(implicit loggingContext: LoggingContext): Future[GetPackageResponse] =
     withEnrichedLoggingContext("packageId" -> request.packageId) { implicit loggingContext =>
       logger.info(s"Received request for a package: $request")
       withValidatedPackageId(request.packageId, request) { packageId =>
@@ -61,9 +80,9 @@ private[apiserver] final class ApiPackageService private (
       }
     }
 
-  override def getPackageStatus(
+  private def doGetPackageStatus(
       request: GetPackageStatusRequest
-  ): Future[GetPackageStatusResponse] =
+  )(implicit loggingContext: LoggingContext): Future[GetPackageStatusResponse] =
     withEnrichedLoggingContext("packageId" -> request.packageId) { implicit loggingContext =>
       logger.info(s"Received request for a package status: $request")
       withValidatedPackageId(request.packageId, request) { packageId =>
@@ -83,7 +102,7 @@ private[apiserver] final class ApiPackageService private (
 
   private def withValidatedPackageId[T, R](packageId: String, request: R)(
       block: Ref.PackageId => Future[T]
-  ): Future[T] =
+  )(implicit loggingContext: LoggingContext): Future[T] =
     Ref.PackageId
       .fromString(packageId)
       .fold(
@@ -128,6 +147,7 @@ private[platform] object ApiPackageService {
     val service = new ApiPackageService(
       backend = backend,
       errorCodesVersionSwitcher = errorCodesVersionSwitcher,
+      loggingContext = loggingContext,
     )
     new PackageServiceValidation(
       service = service,
