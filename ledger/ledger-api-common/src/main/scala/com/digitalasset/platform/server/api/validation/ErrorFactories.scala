@@ -129,15 +129,40 @@ class ErrorFactories private (errorCodesVersionSwitcher: ErrorCodesVersionSwitch
   ): StatusRuntimeException =
     errorCodesVersionSwitcher.choose(
       v1 = {
-        val statusBuilder = Status
-          .newBuilder()
-          .setCode(Code.INVALID_ARGUMENT.value())
-          .setMessage(s"Invalid argument: $message")
-        addDefiniteAnswerDetails(definiteAnswer, statusBuilder)
-        grpcError(statusBuilder.build())
+        invalidArgumentV1(definiteAnswer, message)
       },
       v2 = LedgerApiErrors.CommandValidation.InvalidArgument
         .Reject(message)
+        .asGrpcError,
+    )
+
+  def readingOffsetAfterLedgerEnd(definiteAnswer: Option[Boolean])(message: String)(implicit
+      contextualizedErrorLogger: ContextualizedErrorLogger
+  ): StatusRuntimeException =
+    errorCodesVersionSwitcher.choose(
+      v1 = {
+        invalidArgumentV1(definiteAnswer, message)
+      },
+      v2 = LedgerApiErrors.ReadErrors.RequestedOffsetAfterLedgerEnd
+        .Reject(message)
+        .asGrpcError,
+    )
+
+  def nonHexOffset(
+      definiteAnswer: Option[Boolean]
+  )(fieldName: String, offsetValue: String, message: String)(implicit
+      contextualizedErrorLogger: ContextualizedErrorLogger
+  ): StatusRuntimeException =
+    errorCodesVersionSwitcher.choose(
+      v1 = {
+        invalidArgumentV1(definiteAnswer, message)
+      },
+      v2 = LedgerApiErrors.NonHexOffset
+        .Error(
+          fieldName = fieldName,
+          offsetValue = offsetValue,
+          message = message,
+        )
         .asGrpcError,
     )
 
@@ -319,6 +344,18 @@ class ErrorFactories private (errorCodesVersionSwitcher: ErrorCodesVersionSwitch
   def grpcError(status: Status): StatusRuntimeException = new NoStackTraceApiException(
     StatusProto.toStatusRuntimeException(status)
   )
+
+  private def invalidArgumentV1(
+      definiteAnswer: Option[Boolean],
+      message: String,
+  ): StatusRuntimeException = {
+    val statusBuilder = Status
+      .newBuilder()
+      .setCode(Code.INVALID_ARGUMENT.value())
+      .setMessage(s"Invalid argument: $message")
+    addDefiniteAnswerDetails(definiteAnswer, statusBuilder)
+    grpcError(statusBuilder.build())
+  }
 }
 
 /** Object exposing the legacy error factories.
