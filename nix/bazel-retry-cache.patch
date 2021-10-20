@@ -67,7 +67,7 @@ index 57741a8f28..6673149a20 100644
          workingDirectory,
          diskCachePath,
 diff --git a/src/main/java/com/google/devtools/build/lib/remote/RemoteModule.java b/src/main/java/com/google/devtools/build/lib/remote/RemoteModule.java
-index 350e1afa51..a5a8cf366d 100644
+index 350e1afa51..937dddd1b9 100644
 --- a/src/main/java/com/google/devtools/build/lib/remote/RemoteModule.java
 +++ b/src/main/java/com/google/devtools/build/lib/remote/RemoteModule.java
 @@ -59,9 +59,11 @@ import com.google.devtools.build.lib.exec.ModuleActionContextRegistry;
@@ -90,7 +90,7 @@ index 350e1afa51..a5a8cf366d 100644
  import java.util.HashSet;
  import java.util.List;
  import java.util.Map;
-@@ -213,7 +216,27 @@ public final class RemoteModule extends BlazeModule {
+@@ -213,7 +216,26 @@ public final class RemoteModule extends BlazeModule {
                remoteOptions,
                creds,
                Preconditions.checkNotNull(env.getWorkingDirectory(), "workingDirectory"),
@@ -107,11 +107,10 @@ index 350e1afa51..a5a8cf366d 100644
 +                   }
 +                   if (retry) {
 +                     System.err.println("RETRYING: " + e.toString());
-+                     return true;
-+                   } else {
++                   } else if (!(e instanceof CacheNotFoundException)) {
 +                     System.err.println("NOT RETRYING: " + e.toString());
-+                     return false;
 +                   }
++                   return retry;
 +                 },
 +                 retryScheduler,
 +                 Retrier.ALLOW_ALL_CALLS)
