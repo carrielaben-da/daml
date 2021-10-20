@@ -3,9 +3,16 @@
 
 package com.daml.platform.apiserver.services
 
-import com.daml.ledger.api.v1.version_service.GetLedgerApiVersionRequest
-import com.daml.ledger.api.v1.version_service.GetLedgerApiVersionResponse
-import com.daml.ledger.api.v1.version_service.VersionServiceGrpc
+import com.daml.ledger.api.v1.experimental_features.{
+  ExperimentalFeatures,
+  ExperimentalSelfServiceErrorCode,
+}
+import com.daml.ledger.api.v1.version_service.{
+  FeatureDescriptor,
+  GetLedgerApiVersionRequest,
+  GetLedgerApiVersionResponse,
+  VersionServiceGrpc,
+}
 import com.daml.ledger.api.v1.version_service.VersionServiceGrpc.VersionService
 import com.daml.logging.ContextualizedLogger
 import com.daml.logging.LoggingContext
@@ -19,7 +26,8 @@ import scala.io.Source
 import scala.util.Try
 import scala.util.control.NonFatal
 
-private[apiserver] final class ApiVersionService private (implicit
+private[apiserver] final class ApiVersionService private (usesSelfServiceErrorCodes: Boolean)(
+    implicit
     loggingContext: LoggingContext,
     ec: ExecutionContext,
 ) extends VersionService
@@ -35,11 +43,20 @@ private[apiserver] final class ApiVersionService private (implicit
   ): Future[GetLedgerApiVersionResponse] =
     Future
       .fromTry(apiVersion)
-      .map(GetLedgerApiVersionResponse(_))
+      .map(apiVersionResponse)
       .andThen(logger.logErrorsOnCall[GetLedgerApiVersionResponse])
       .recoverWith { case NonFatal(_) =>
         internalError
       }
+
+  private val apiVersionResponse =
+    if (usesSelfServiceErrorCodes)
+      GetLedgerApiVersionResponse(_).withFeatures(
+        FeatureDescriptor().withExperimental(
+          ExperimentalFeatures().withSelfServiceErrorCodes(ExperimentalSelfServiceErrorCode())
+        )
+      )
+    else GetLedgerApiVersionResponse(_)
 
   private lazy val internalError: Future[Nothing] =
     Future.failed(
@@ -65,6 +82,8 @@ private[apiserver] final class ApiVersionService private (implicit
 }
 
 private[apiserver] object ApiVersionService {
-  def create()(implicit loggingContext: LoggingContext, ec: ExecutionContext): ApiVersionService =
-    new ApiVersionService
+  def create(
+      usesSelfServiceErrorCodes: Boolean
+  )(implicit loggingContext: LoggingContext, ec: ExecutionContext): ApiVersionService =
+    new ApiVersionService(usesSelfServiceErrorCodes)
 }
