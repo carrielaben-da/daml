@@ -3,10 +3,11 @@
 
 package com.daml.platform.apiserver.services
 
+import com.daml.error.ErrorCodesVersionSwitcher
+
 import java.time.{Duration, Instant}
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-
 import com.daml.grpc.{GrpcException, GrpcStatus}
 import com.daml.ledger.api.v1.command_service.CommandServiceGrpc.CommandService
 import com.daml.ledger.api.v1.command_service.{CommandServiceGrpc, SubmitAndWaitRequest}
@@ -36,107 +37,141 @@ class ApiCommandServiceSpec
   private implicit val resourceContext: ResourceContext = ResourceContext(executionContext)
   private implicit val loggingContext: LoggingContext = LoggingContext.ForTesting
 
-  "the command service" should {
-    val completionSuccess = CompletionResponse.CompletionSuccess(
-      Completion(
-        commandId = "command ID",
-        status = Some(OkStatus),
-        transactionId = "transaction ID",
-      )
-    )
-    "submit a request, and wait for a response" in {
-      val commands = someCommands()
-      val submissionTracker = mock[Tracker]
-      when(
-        submissionTracker.track(any[CommandSubmission])(any[ExecutionContext], any[LoggingContext])
-      ).thenReturn(
-        Future.successful(
-          Right(completionSuccess)
+  addTests(true)
+  addTests(false)
+
+  def addTests(useSelfServiceErrorCodes: Boolean): Unit = {
+    val suffix = s"(enableSelfServiceErrorCodes=${useSelfServiceErrorCodes})"
+    val errorCodesVersionSwitcher = new ErrorCodesVersionSwitcher(useSelfServiceErrorCodes)
+
+    s"the command service $suffix" should {
+      val completionSuccess = CompletionResponse.CompletionSuccess(
+        Completion(
+          commandId = "command ID",
+          status = Some(OkStatus),
+          transactionId = "transaction ID",
         )
       )
-
-      openChannel(
-        new ApiCommandService(UnimplementedTransactionServices, submissionTracker)
-      ).use { stub =>
-        val request = SubmitAndWaitRequest.of(Some(commands))
-        stub.submitAndWaitForTransactionId(request).map { response =>
-          response.transactionId should be("transaction ID")
-          verify(submissionTracker).track(
-            eqTo(CommandSubmission(commands))
-          )(any[ExecutionContext], any[LoggingContext])
-          succeed
-        }
-      }
-    }
-
-    "pass the provided deadline to the tracker as a timeout" in {
-      val now = Instant.parse("2021-09-01T12:00:00Z")
-      val deadlineTicker = new Deadline.Ticker {
-        override def nanoTime(): Long =
-          now.getEpochSecond * TimeUnit.SECONDS.toNanos(1) + now.getNano
-      }
-
-      val commands = someCommands()
-      val submissionTracker = mock[Tracker]
-      when(
-        submissionTracker.track(any[CommandSubmission])(any[ExecutionContext], any[LoggingContext])
-      ).thenReturn(
-        Future.successful(
-          Right(completionSuccess)
+      "submit a request, and wait for a response" in {
+        val commands = someCommands()
+        val submissionTracker = mock[Tracker]
+        when(
+          submissionTracker.track(any[CommandSubmission])(
+            any[ExecutionContext],
+            any[LoggingContext],
+          )
+        ).thenReturn(
+          Future.successful(
+            Right(completionSuccess)
+          )
         )
-      )
 
-      openChannel(
-        new ApiCommandService(UnimplementedTransactionServices, submissionTracker),
-        deadlineTicker,
-      ).use { stub =>
-        val request = SubmitAndWaitRequest.of(Some(commands))
-        stub
-          .withDeadline(Deadline.after(30, TimeUnit.SECONDS, deadlineTicker))
-          .submitAndWaitForTransactionId(request)
-          .map { response =>
+        openChannel(
+          new ApiCommandService(
+            UnimplementedTransactionServices,
+            submissionTracker,
+            errorCodesVersionSwitcher,
+          )
+        ).use { stub =>
+          val request = SubmitAndWaitRequest.of(Some(commands))
+          stub.submitAndWaitForTransactionId(request).map { response =>
             response.transactionId should be("transaction ID")
             verify(submissionTracker).track(
-              eqTo(CommandSubmission(commands, timeout = Some(Duration.ofSeconds(30))))
+              eqTo(CommandSubmission(commands))
             )(any[ExecutionContext], any[LoggingContext])
             succeed
           }
+        }
       }
-    }
 
-    "time out if the tracker times out" in {
-      val commands = someCommands()
-      val submissionTracker = mock[Tracker]
-      when(
-        submissionTracker.track(any[CommandSubmission])(any[ExecutionContext], any[LoggingContext])
-      ).thenReturn(
-        Future.successful(
-          Left(
-            CompletionResponse.QueueCompletionFailure(
-              CompletionResponse.TimeoutResponse("command ID")
+      "pass the provided deadline to the tracker as a timeout" in {
+        val now = Instant.parse("2021-09-01T12:00:00Z")
+        val deadlineTicker = new Deadline.Ticker {
+          override def nanoTime(): Long =
+            now.getEpochSecond * TimeUnit.SECONDS.toNanos(1) + now.getNano
+        }
+
+        val commands = someCommands()
+        val submissionTracker = mock[Tracker]
+        when(
+          submissionTracker.track(any[CommandSubmission])(
+            any[ExecutionContext],
+            any[LoggingContext],
+          )
+        ).thenReturn(
+          Future.successful(
+            Right(completionSuccess)
+          )
+        )
+
+        openChannel(
+          new ApiCommandService(
+            UnimplementedTransactionServices,
+            submissionTracker,
+            errorCodesVersionSwitcher,
+          ),
+          deadlineTicker,
+        ).use { stub =>
+          val request = SubmitAndWaitRequest.of(Some(commands))
+          stub
+            .withDeadline(Deadline.after(30, TimeUnit.SECONDS, deadlineTicker))
+            .submitAndWaitForTransactionId(request)
+            .map { response =>
+              response.transactionId should be("transaction ID")
+              verify(submissionTracker).track(
+                eqTo(CommandSubmission(commands, timeout = Some(Duration.ofSeconds(30))))
+              )(any[ExecutionContext], any[LoggingContext])
+              succeed
+            }
+        }
+      }
+
+      "time out if the tracker times out" in {
+        val commands = someCommands()
+        val submissionTracker = mock[Tracker]
+        when(
+          submissionTracker.track(any[CommandSubmission])(
+            any[ExecutionContext],
+            any[LoggingContext],
+          )
+        ).thenReturn(
+          Future.successful(
+            Left(
+              CompletionResponse.QueueCompletionFailure(
+                CompletionResponse.TimeoutResponse("command ID")
+              )
             )
           )
         )
-      )
 
-      openChannel(new ApiCommandService(UnimplementedTransactionServices, submissionTracker)).use {
-        stub =>
+        openChannel(
+          new ApiCommandService(
+            UnimplementedTransactionServices,
+            submissionTracker,
+            errorCodesVersionSwitcher,
+          )
+        ).use { stub =>
           val request = SubmitAndWaitRequest.of(Some(commands))
           stub.submitAndWaitForTransactionId(request).failed.map { exception =>
             exception should matchPattern { case GrpcException(GrpcStatus.ABORTED(), _) => }
           }
+        }
       }
-    }
 
-    "close the supplied tracker when closed" in {
-      val submissionTracker = mock[Tracker]
-      val service = new ApiCommandService(UnimplementedTransactionServices, submissionTracker)
+      "close the supplied tracker when closed" in {
+        val submissionTracker = mock[Tracker]
+        val service = new ApiCommandService(
+          UnimplementedTransactionServices,
+          submissionTracker,
+          errorCodesVersionSwitcher,
+        )
 
-      verifyZeroInteractions(submissionTracker)
+        verifyZeroInteractions(submissionTracker)
 
-      service.close()
-      verify(submissionTracker).close()
-      succeed
+        service.close()
+        verify(submissionTracker).close()
+        succeed
+      }
     }
   }
 }
