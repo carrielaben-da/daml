@@ -97,6 +97,7 @@ metadataEncodingTests = testGroup "MetadataEncoding"
         , ("\"foo\" Foo.Bar (Qux($sel:getQux:Qux))"
           , mkExportInfoTC (Just "foo") ["Foo", "Bar"] "Qux" [] ["getQux"])
         ]
+    -- , roundtripTests ""
     ]
 
 mkImport :: Maybe T.Text -> [T.Text] -> LF.Qualified ()
