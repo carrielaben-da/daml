@@ -7,21 +7,21 @@ HTTP JSON API Service
 #####################
 
 The **JSON API** provides a significantly simpler way to interact with a ledger than
-:doc:`the Ledger API </app-dev/ledger-api>` by providing *basic active contract set functionality*:
+:doc:`the Ledger API </app-dev/ledger-api>` does by providing *basic active contract set functionality*:
 
-- creating contracts,
-- exercising choices on contracts,
-- querying the current active contract set, and
+- creating contracts
+- exercising choices on contracts
+- querying the current active contract set
 - retrieving all known parties.
 
 The goal of this API is to get your distributed ledger application up and running quickly, so we have deliberately excluded
 complicating concerns including, but not limited to:
 
-- inspecting transactions,
-- asynchronous submit/completion workflows,
-- temporal queries (e.g. active contracts *as of a certain time*), and
+- inspecting transactions
+- asynchronous submit/completion workflows
+- temporal queries (e.g. active contracts *as of a certain time*)
 
-For these and other features, use :doc:`the Ledger API </app-dev/ledger-api>`
+For these and other features, refer to :doc:`the Ledger API </app-dev/ledger-api>`
 instead.
 
 We welcome feedback about the JSON API on
@@ -42,7 +42,7 @@ Running the JSON API
 Start a Daml Ledger
 ===================
 
-You can run the JSON API alongside any ledger exposing the gRPC Ledger API you want. If you don't have an existing ledger, you can start an in-memory sandbox:
+You can run the JSON API alongside any ledger exposing the gRPC Ledger API. If you don't have an existing ledger, you can start one in an in-memory sandbox:
 
 .. code-block:: shell
 
@@ -74,12 +74,11 @@ Standalone JAR
 
 The ``daml json-api`` command is great during development since it is
 included with the SDK and integrates with ``daml start`` and other
-commands. Once you are ready to deploy your application, you can
+commands. Once you're ready to deploy your application, you can
 download the standalone JAR from
 `Github releases <https://github.com/digital-asset/daml/releases>`_. It is much smaller
-than the whole SDK and easier to deploy since it only requires a JVM
-but no other dependencies and no installation process. The JAR accepts
-exactly the same command line parameters as ``daml json-api``, so to
+than the whole SDK and easier to deploy since it only requires a JVM and has no other dependencies or installation processes. The JAR accepts
+exactly the same command line parameters as ``daml json-api`` does, so to
 start the standalone JAR, you can use the following command:
 
 .. code-block:: shell
@@ -95,13 +94,13 @@ With Query Store
 In production setups, you should configure the JSON API to use a
 PostgreSQL backend as a cache. The in-memory backend will call the
 ledger to fetch the entire active contract set for the templates in
-your query every time so it is generally not recommended to rely on
-this in production. Note that the PostgreSQL backend acts purely as a
-cache. It is safe to reinitialize the database at any time.
+your query every time so it's generally not recommended to rely on
+this setup in production. Note that the PostgreSQL backend acts purely as a
+cache. And is therefore safe to reinitialize the database at any time.
 
 To enable the PostgreSQL backend you can use the ``--query-store-jdbc-config`` flag, an example of which is below.
 
-.. note:: When you use the Query Store you'll want to use ``start-mode=create-if-needed-and-start`` so that all the necessary tables are created if they don't exist.
+.. note:: When you use the Query Store you'll want to use ``start-mode=create-if-needed-and-start`` so that all the necessary tables are created if they don't already exist.
 
 
 .. code-block:: shell
@@ -109,27 +108,27 @@ To enable the PostgreSQL backend you can use the ``--query-store-jdbc-config`` f
     daml json-api --ledger-host localhost --ledger-port 6865 --http-port 7575 \
     --query-store-jdbc-config "driver=org.postgresql.Driver,url=jdbc:postgresql://localhost:5432/test?&ssl=true,user=postgres,password=password,start-mode=create-if-needed-and-start"
 
-.. note:: The JSON API provides many other useful configuration flags, run ``daml json-api --help`` to see all of them.
+.. note:: The JSON API provides many other useful configuration flags. Run ``daml json-api --help`` to see all of them.
 
 Access Tokens
 =============
 
 The JSON API essentially performs two separate tasks:
 
-1. It talks to the Ledger API to get data it needs to operate, for this you need to *provide an access token* if your Ledger requires authorization. Learn more in the :doc:`/app-dev/authorization` docs.
-2. It accepts requests from Parties and passes them on to the Ledger API, for this each party needs to provide an *access token with each request* it sends to the JSON API.
+1. It talks to the Ledger API to get the data it needs to operate. If your ledger requries authorization you'll need to *provide an access token*. Learn more in the :doc:`/app-dev/authorization` docs.
+2. It accepts requests from Parties and passes them on to the Ledger API. In order to do this each party needs to provide an *access token with each request* it sends to the JSON API.
 
-.. note:: By default, the Daml Sandbox does not does not require access tokens. However, you still need to provide a party-specific access token when submitting commands or queries as a party. The token will not be validated in this case but it will be decoded to extract information like the party submitting the command.
+.. note:: By default, the Daml Sandbox does not does not require access tokens. However, you will still need to provide a party-specific access token when you're submitting commands or queries as a party. The token will not be validated in this case but it will be decoded to extract information, such as the party submitting the command.
 
 Party-specific Access Tokens
 ----------------------------
 
-Party-specific requests, i.e., command submissions and queries, require a JWT with some additional restrictions compared to the format :doc:`described in the Token Payload section here </tools/sandbox>`. For command submissions, ``actAs`` must contain at least one party and ``readAs`` can contain 0 or more parties. Queries require at least one party in either ``actAs`` or ``readAs`` (note that before SDK 1.7.0, every request required exactly one party and before SDK 1.8.0 actAs was limited to exactly one party). In addition to that, the application id and ledger id are mandatory. HTTP requests pass the token in a header, while WebSocket requests pass the token in a subprotocol.
+Party-specific requests, i.e., command submissions and queries, require a JWT with some additional restrictions compared to the format :doc:`described in the Token Payload section here </tools/sandbox>`. For command submissions, ``actAs`` must contain at least one party and ``readAs`` can contain 0 or more parties. Queries require at least one party in either ``actAs`` or ``readAs`` (note that before SDK 1.7.0, every request required exactly one party and before SDK 1.8.0 actAs was limited to exactly one party). In addition, the application id and ledger id are mandatory. HTTP requests pass the token in a header, while WebSocket requests pass the token in a subprotocol.
 
-.. note:: While the JSON API receives the token it doesn't validate it itself. Upon receiving a token it will pass it, and all data contained within the request, on to the Ledger API's AuthService which will then determine if the token is valid and authorized. However, the JSON API does decode the token to extract the ledger id, application id and party so it requires that you use the JWT format documented below.
+.. note:: While the JSON API receives the token it doesn't validate it itself. Upon receiving a token it will pass it, and all data contained within the request, on to the Ledger API's AuthService which will then determine if the token is valid and authorized. However, the JSON API does decode the token to extract the ledger id, application id, and party, so it requires you use the JWT format documented below.
 
 For a ledger without authorization, e.g., the default configuration of Daml Sandbox, you can use `https://jwt.io <https://jwt.io/#debugger-io?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwczovL2RhbWwuY29tL2xlZGdlci1hcGkiOnsibGVkZ2VySWQiOiJNeUxlZGdlciIsImFwcGxpY2F0aW9uSWQiOiJmb29iYXIiLCJhY3RBcyI6WyJBbGljZSJdfX0.atGiYNc9HfBFbm8s9j5vvMv2sJUlVprFiRmLeoUpJeY>`_ (or the JWT library of your choice) to generate your
-token.  You can use an arbitrary secret here. The default "header" is fine.  Under "Payload", fill in:
+token. You can use an arbitrary secret here. The default "header" is fine. Under "Payload", fill in:
 
 .. code-block:: json
 
@@ -189,7 +188,7 @@ Auth via WebSockets
 
 WebSocket clients support a "subprotocols" argument (sometimes simply
 called "protocols"); this is usually in a list form but occasionally in
-comma-separated form.  Check documentation for your WebSocket library of
+comma-separated form. Check documentation for your WebSocket library of
 choice for details.
 
 For HTTP JSON requests, you must pass two subprotocols:
@@ -466,7 +465,7 @@ HTTP Request
 Where:
 
 - ``templateId`` -- contract template identifier, same as in :ref:`create request <create-request>`,
-- ``contractId`` -- contract identifier, the value from the  :ref:`create response <create-response>`,
+- ``contractId`` -- contract identifier, the value from the :ref:`create response <create-response>`,
 - ``choice`` -- Daml contract choice, that is being exercised,
 - ``argument`` -- contract choice argument(s).
 
